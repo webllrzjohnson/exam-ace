@@ -1,4 +1,5 @@
-import { BarChart3, BookOpen, Target, Flame, TrendingUp } from 'lucide-react';
+import Link from "next/link";
+import { BarChart3, BookOpen, Target, Flame, TrendingUp } from "lucide-react";
 
 export default function DashboardPage() {
   return (
@@ -27,12 +28,12 @@ export default function DashboardPage() {
         <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted-foreground/40" />
         <h2 className="font-display text-xl font-bold text-foreground mb-2">No quiz history yet</h2>
         <p className="text-muted-foreground mb-6">Take your first quiz to start tracking your progress.</p>
-        <a
+        <Link
           href="/quizzes"
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
         >
           Browse Quizzes
-        </a>
+        </Link>
       </div>
     </div>
   );

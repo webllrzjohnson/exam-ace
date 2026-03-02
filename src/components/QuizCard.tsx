@@ -1,17 +1,27 @@
-import { Link } from 'react-router-dom';
-import { Clock, HelpCircle, TrendingUp } from 'lucide-react';
-import DifficultyBadge from './DifficultyBadge';
-import type { Quiz } from '@/data/quizData';
+import Link from "next/link";
+import { Clock, HelpCircle, TrendingUp } from "lucide-react";
+import DifficultyBadge from "./DifficultyBadge";
+
+type Quiz = {
+  id: string;
+  title: string;
+  description: string;
+  categoryIcon: string;
+  difficulty: string;
+  questionCount: number;
+  timeLimit: number;
+  passRate: number;
+};
 
 export default function QuizCard({ quiz }: { quiz: Quiz }) {
   return (
     <Link
-      to={`/quiz/${quiz.id}`}
+      href={`/quiz/${quiz.id}`}
       className="group block rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5"
     >
       <div className="flex items-start justify-between mb-3">
         <span className="text-2xl">{quiz.categoryIcon}</span>
-        <DifficultyBadge difficulty={quiz.difficulty} />
+        <DifficultyBadge difficulty={quiz.difficulty as "Easy" | "Medium" | "Hard"} />
       </div>
       <h3 className="font-display font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
         {quiz.title}
