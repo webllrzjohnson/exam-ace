@@ -100,8 +100,12 @@ export default function ResultsPage({ id }: { id: string }) {
     return `${m}m ${sec}s`;
   };
 
-  const handleReview = () => {
-    setQuizReview({ answers, wrongQuestions });
+  const handleReview = (showAll = false) => {
+    setQuizReview({
+      answers,
+      wrongQuestions: showAll ? questions : wrongQuestions,
+      showAll,
+    });
     clearQuizResult();
     router.push(`/quiz/${id}/review`);
   };
@@ -186,16 +190,23 @@ export default function ResultsPage({ id }: { id: string }) {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
           {wrongQuestions.length > 0 && (
             <button
-              onClick={handleReview}
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              onClick={() => handleReview(false)}
+              className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
             >
               <Eye className="w-4 h-4" />
               Review Wrong Answers
             </button>
           )}
+          <button
+            onClick={() => handleReview(true)}
+            className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 border border-primary text-primary py-3 rounded-xl font-semibold hover:bg-primary/10 transition-colors"
+          >
+            <Eye className="w-4 h-4" />
+            Review All Answers
+          </button>
           <button
             onClick={() =>
               handleNavigate(id.startsWith("simulation") ? "/simulation" : `/quiz/${id}`)

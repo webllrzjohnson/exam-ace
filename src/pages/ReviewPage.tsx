@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, ArrowLeft } from "lucide-react";
 import { getQuizReview, clearQuizReview } from "@/lib/quiz-storage";
@@ -17,9 +17,11 @@ type Question = {
 };
 
 export default function ReviewPage({ id }: { id: string }) {
+  const router = useRouter();
   const [quiz, setQuiz] = useState<{ id: string } | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [wrongQuestions, setWrongQuestions] = useState<Question[]>([]);
+  const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const isSimulation = id?.startsWith("simulation") ?? false;
@@ -27,12 +29,12 @@ export default function ReviewPage({ id }: { id: string }) {
   useEffect(() => {
     const review = getQuizReview();
     if (!review) {
-      window.location.href = isSimulation ? "/simulation" : `/quiz/${id}`;
+      router.replace(isSimulation ? "/simulation" : `/quiz/${id}`);
       return;
     }
     setAnswers(review.answers);
     setWrongQuestions(review.wrongQuestions);
-    clearQuizReview();
+    setShowAll(review.showAll ?? false);
 
     if (isSimulation) {
       setQuiz({ id });
@@ -43,7 +45,7 @@ export default function ReviewPage({ id }: { id: string }) {
         .then((data) => (data ? setQuiz({ id: data.id }) : null))
         .finally(() => setLoading(false));
     }
-  }, [id, isSimulation]);
+  }, [id, isSimulation, router]);
 
   if (loading || !quiz) {
     return <div className="container py-20 text-center text-muted-foreground">Loading...</div>;
@@ -55,19 +57,28 @@ export default function ReviewPage({ id }: { id: string }) {
       : `/simulation/${id.replace("simulation-", "")}/play`
     : `/quiz/${quiz.id}`;
 
+  const handleBack = () => {
+    clearQuizReview();
+    router.push(isSimulation ? "/simulation" : `/quiz/${quiz.id}`);
+  };
+
   return (
     <div className="container max-w-2xl py-10">
-      <Link
-        href={isSimulation ? "/simulation" : `/quiz/${quiz.id}`}
+      <button
+        onClick={handleBack}
         className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         {isSimulation ? "Back to simulations" : "Back to quiz"}
-      </Link>
+      </button>
 
-      <h1 className="font-display text-2xl font-bold text-foreground mb-2">Review Wrong Answers</h1>
+      <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+        {showAll ? "Review All Answers" : "Review Wrong Answers"}
+      </h1>
       <p className="text-muted-foreground mb-8">
-        You got {wrongQuestions.length} question{wrongQuestions.length > 1 ? "s" : ""} wrong. Study the explanations below.
+        {showAll
+          ? "Review each question with the correct answer and explanation."
+          : `You got ${wrongQuestions.length} question${wrongQuestions.length > 1 ? "s" : ""} wrong. Study the explanations below.`}
       </p>
 
       <div className="space-y-6">
@@ -143,12 +154,15 @@ export default function ReviewPage({ id }: { id: string }) {
       </div>
 
       <div className="mt-10 text-center">
-        <Link
-          href={retryHref}
+        <button
+          onClick={() => {
+            clearQuizReview();
+            router.push(retryHref);
+          }}
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
         >
           {isSimulation ? "Retry Simulation" : "Retry This Quiz"}
-        </Link>
+        </button>
       </div>
     </div>
   );

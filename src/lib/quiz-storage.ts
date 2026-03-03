@@ -32,6 +32,7 @@ export type QuizReview = {
     topic: string;
     difficulty: string;
   }>;
+  showAll?: boolean;
 };
 
 export function setQuizResult(data: QuizResult) {
