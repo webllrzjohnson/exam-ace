@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -14,6 +14,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 type Quiz = { id: string; slug: string; title: string; questionCount: number };
 type Question = { id: string; type: string; question: string; topic: string; difficulty: string };
@@ -23,6 +34,10 @@ export default function AdminQuestionsClient() {
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importJson, setImportJson] = useState("");
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +64,65 @@ export default function AdminQuestionsClient() {
     if (res.ok && selectedQuiz) {
       setQuestions((prev) => prev.filter((q) => q.id !== id));
       setDeleteId(null);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = reader.result as string;
+        JSON.parse(text);
+        setImportJson(text);
+      } catch {
+        toast.error("Invalid JSON file");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  const handleImport = async () => {
+    if (!selectedQuiz) return;
+    let data: { quizId?: string; questions?: unknown[] };
+    try {
+      data = JSON.parse(importJson);
+    } catch {
+      toast.error("Invalid JSON");
+      return;
+    }
+    const payload = {
+      quizId: data.quizId ?? selectedQuiz.id,
+      questions: data.questions ?? (Array.isArray(data) ? data : []),
+    };
+    if (!Array.isArray(payload.questions) || payload.questions.length === 0) {
+      toast.error("No questions found. Expected { quizId?, questions: [...] }");
+      return;
+    }
+    setImporting(true);
+    try {
+      const res = await fetch("/api/questions/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        toast.error(result.error ?? "Import failed");
+        return;
+      }
+      toast.success(`Imported ${result.imported} questions`);
+      setImportOpen(false);
+      setImportJson("");
+      if (selectedQuiz) {
+        const listRes = await fetch(`/api/quizzes/list?quizId=${selectedQuiz.id}`);
+        const listData = (await listRes.json()) as { questions?: Question[] };
+        setQuestions(listData?.questions ?? []);
+      }
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -91,12 +165,18 @@ export default function AdminQuestionsClient() {
           ))}
         </select>
         {selectedQuiz && (
-          <Link href={`/admin/questions/new?quizId=${selectedQuiz.id}`}>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Question
+          <>
+            <Link href={`/admin/questions/new?quizId=${selectedQuiz.id}`}>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Question
+              </Button>
+            </Link>
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import
             </Button>
-          </Link>
+          </>
         )}
       </div>
 
@@ -148,6 +228,52 @@ export default function AdminQuestionsClient() {
           )}
         </div>
       )}
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Import Questions</DialogTitle>
+            <DialogDescription>
+              Upload a JSON file or paste JSON. Use quizId from the payload or the selected quiz. Format:{" "}
+              <code className="text-xs bg-muted px-1 rounded">
+                {`{ "quizId?": "...", "questions": [...] }`}
+              </code>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="import-file">Upload JSON file</Label>
+              <input
+                id="import-file"
+                ref={fileInputRef}
+                type="file"
+                accept=".json,application/json"
+                className="mt-2 block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border file:border-input file:bg-muted file:text-foreground"
+                onChange={handleFileChange}
+              />
+            </div>
+            <div>
+              <Label htmlFor="import-json">Or paste JSON</Label>
+              <Textarea
+                id="import-json"
+                placeholder='{ "questions": [ { "type": "single", "question": "...", ... } ] }'
+                rows={12}
+                className="mt-2 font-mono text-sm"
+                value={importJson}
+                onChange={(e) => setImportJson(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleImport} disabled={importing || !importJson.trim()}>
+              {importing ? "Importing..." : "Import"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>

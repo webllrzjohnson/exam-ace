@@ -22,34 +22,47 @@ export default function ReviewPage({ id }: { id: string }) {
   const [wrongQuestions, setWrongQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const isSimulation = id?.startsWith("simulation") ?? false;
+
   useEffect(() => {
     const review = getQuizReview();
     if (!review) {
-      window.location.href = `/quiz/${id}`;
+      window.location.href = isSimulation ? "/simulation" : `/quiz/${id}`;
       return;
     }
     setAnswers(review.answers);
     setWrongQuestions(review.wrongQuestions);
     clearQuizReview();
 
-    fetch(`/api/quizzes/${id}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => (data ? setQuiz({ id: data.id }) : null))
-      .finally(() => setLoading(false));
-  }, [id]);
+    if (isSimulation) {
+      setQuiz({ id });
+      setLoading(false);
+    } else {
+      fetch(`/api/quizzes/${id}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => (data ? setQuiz({ id: data.id }) : null))
+        .finally(() => setLoading(false));
+    }
+  }, [id, isSimulation]);
 
   if (loading || !quiz) {
     return <div className="container py-20 text-center text-muted-foreground">Loading...</div>;
   }
 
+  const retryHref = isSimulation
+    ? id === "simulation-mixed"
+      ? "/simulation/play"
+      : `/simulation/${id.replace("simulation-", "")}/play`
+    : `/quiz/${quiz.id}`;
+
   return (
     <div className="container max-w-2xl py-10">
       <Link
-        href={`/quiz/${quiz.id}`}
+        href={isSimulation ? "/simulation" : `/quiz/${quiz.id}`}
         className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to quiz
+        {isSimulation ? "Back to simulations" : "Back to quiz"}
       </Link>
 
       <h1 className="font-display text-2xl font-bold text-foreground mb-2">Review Wrong Answers</h1>
@@ -131,10 +144,10 @@ export default function ReviewPage({ id }: { id: string }) {
 
       <div className="mt-10 text-center">
         <Link
-          href={`/quiz/${quiz.id}`}
+          href={retryHref}
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
         >
-          Retry This Quiz
+          {isSimulation ? "Retry Simulation" : "Retry This Quiz"}
         </Link>
       </div>
     </div>

@@ -28,17 +28,22 @@ export default function ResultsPage({ id }: { id: string }) {
   useEffect(() => {
     const result = getQuizResult();
     if (!result || (result.quizId && result.quizId !== id)) {
-      router.replace(`/quiz/${id}`);
+      router.replace(id.startsWith("simulation") ? "/simulation" : `/quiz/${id}`);
       return;
     }
     setAnswers(result.answers);
     setTimeTaken(result.timeTaken);
     setMode(result.mode);
 
-    fetch(`/api/quizzes/${id}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setQuiz)
-      .finally(() => setLoading(false));
+    if (result.questions?.length) {
+      setQuiz({ questions: result.questions });
+      setLoading(false);
+    } else {
+      fetch(`/api/quizzes/${id}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then(setQuiz)
+        .finally(() => setLoading(false));
+    }
   }, [id, router]);
 
   if (loading || !quiz) {
@@ -192,11 +197,13 @@ export default function ResultsPage({ id }: { id: string }) {
             </button>
           )}
           <button
-            onClick={() => handleNavigate(`/quiz/${id}`)}
+            onClick={() =>
+              handleNavigate(id.startsWith("simulation") ? "/simulation" : `/quiz/${id}`)
+            }
             className="flex-1 inline-flex items-center justify-center gap-2 border border-border bg-card text-foreground py-3 rounded-xl font-semibold hover:bg-muted transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
-            Retry Quiz
+            {id.startsWith("simulation") ? "Back to Simulations" : "Retry Quiz"}
           </button>
           <button
             onClick={() => handleNavigate("/")}

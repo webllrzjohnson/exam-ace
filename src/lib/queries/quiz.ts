@@ -1,13 +1,24 @@
 import { db } from "@/lib/db";
 
 export async function getQuizBySlug(slug: string) {
-  return db.quiz.findUnique({
+  const quiz = await db.quiz.findUnique({
     where: { slug },
     include: {
       category: true,
       questions: true,
     },
   });
+  
+  if (quiz) {
+    const shuffled = [...quiz.questions];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return { ...quiz, questions: shuffled };
+  }
+  
+  return quiz;
 }
 
 export async function getQuizzes(filters?: { categorySlug?: string; featured?: boolean }) {

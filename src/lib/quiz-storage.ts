@@ -1,11 +1,23 @@
 const QUIZ_RESULT_KEY = "quiz_result";
 const QUIZ_REVIEW_KEY = "quiz_review";
 
+export type QuizResultQuestion = {
+  id: string;
+  type: string;
+  question: string;
+  options?: string[];
+  correctAnswer: string | string[];
+  explanation: string;
+  topic: string;
+  difficulty: string;
+};
+
 export type QuizResult = {
   quizId: string;
   answers: Record<string, string | string[]>;
   timeTaken: number;
   mode: string;
+  questions?: QuizResultQuestion[];
 };
 
 export type QuizReview = {

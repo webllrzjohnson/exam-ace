@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Home, LayoutGrid, Trophy, User, Menu, X, Shield } from "lucide-react";
+import { BookOpen, Home, LayoutGrid, ClipboardList, Trophy, User, Menu, X, Shield } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
@@ -10,6 +10,7 @@ import { useSession, signOut } from "next-auth/react";
 const navItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/quizzes", label: "Quiz Catalog", icon: LayoutGrid },
+  { to: "/simulation", label: "Simulation", icon: ClipboardList },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/dashboard", label: "Dashboard", icon: User },
 ];
