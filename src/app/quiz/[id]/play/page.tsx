@@ -5,9 +5,17 @@ export default function QuizPlayPage({
   searchParams,
 }: {
   params: { id: string };
-  searchParams: { mode?: string };
+  searchParams: { mode?: string; count?: string; time?: string; untimed?: string };
 }) {
   const { id } = params;
-  const { mode } = searchParams;
-  return <QuizPlayer id={id} mode={mode ?? "practice"} />;
+  const { mode, count, time, untimed } = searchParams;
+  return (
+    <QuizPlayer
+      id={id}
+      mode={mode ?? "practice"}
+      count={count}
+      time={time}
+      untimed={untimed === "true"}
+    />
+  );
 }

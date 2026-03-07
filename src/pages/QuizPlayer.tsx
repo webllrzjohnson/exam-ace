@@ -23,7 +23,15 @@ type Quiz = {
   timeLimit: number;
 };
 
-export default function QuizPlayer({ id, mode }: { id: string; mode: string }) {
+type QuizPlayerProps = {
+  id: string;
+  mode: string;
+  count?: string;
+  time?: string;
+  untimed?: boolean;
+};
+
+export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlayerProps) {
   const router = useRouter();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,8 +44,13 @@ export default function QuizPlayer({ id, mode }: { id: string; mode: string }) {
   const [startTime, setStartTime] = useState(0);
   const [finished, setFinished] = useState(false);
 
+  const apiUrl =
+    id === "advanced-citizenship" && count
+      ? `/api/quizzes/${id}?count=${count}${time ? `&time=${time}` : ""}${untimed ? "&untimed=true" : ""}`
+      : `/api/quizzes/${id}`;
+
   useEffect(() => {
-    fetch(`/api/quizzes/${id}`)
+    fetch(apiUrl)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data) {
@@ -47,7 +60,7 @@ export default function QuizPlayer({ id, mode }: { id: string; mode: string }) {
         }
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [apiUrl]);
 
   const questions = quiz?.questions ?? [];
   const total = questions.length;
@@ -67,7 +80,7 @@ export default function QuizPlayer({ id, mode }: { id: string; mode: string }) {
         finalAnswers[question.id] = selectedOptions[0];
       }
     }
-    setQuizResult({ quizId: quiz.id, answers: finalAnswers, timeTaken, mode });
+    setQuizResult({ quizId: quiz.id, answers: finalAnswers, timeTaken, mode, questions: quiz.questions });
     router.push(`/quiz/${quiz.id}/results`);
   }, [answers, fillAnswer, selectedOptions, question, router, quiz, startTime, mode, finished]);
 

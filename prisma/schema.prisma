@@ -8,12 +8,30 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
   passwordHash String
-  role         String   @default("user")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         String        @default("user")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  quizAttempts QuizAttempt[]
+}
+
+model QuizAttempt {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId     String
+  score      Int
+  timeTaken  Int
+  mode       String
+  passed     Boolean
+  completedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([completedAt])
 }
 
 model Category {

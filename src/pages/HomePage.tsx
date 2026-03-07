@@ -15,7 +15,7 @@ const stats = [
 type Category = { id: string; name: string; icon: string; description: string; quizCount: number; color: string };
 type Quiz = { id: string; title: string; description: string; category: string; categoryIcon: string; difficulty: string; questionCount: number; timeLimit: number; passRate: number; avgScore: number; topics: string[]; featured: boolean };
 
-export default function HomePage({ categories, featured }: { categories: Category[]; featured: Quiz[] }) {
+export default function HomePage({ categories = [], featured = [] }: { categories?: Category[]; featured?: Quiz[] }) {
   return (
     <div>
       <section className="relative overflow-hidden gradient-hero text-primary-foreground">

@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import QuizCard from "@/components/QuizCard";
+import { cn } from "@/lib/utils";
 
 type Quiz = {
   id: string;
@@ -75,44 +78,75 @@ export default function QuizCatalog() {
         <p className="text-muted-foreground">Browse all available quizzes and start practicing</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search quizzes..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+      <div className="mb-8 space-y-6">
+        <div className="flex justify-center">
+          <div className="relative w-full max-w-xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search quizzes..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-12 pr-5 py-3.5 rounded-xl border border-input bg-card text-foreground text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
+        <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
+          <Button
+            variant={selectedCategory === "all" ? "default" : "outline"}
+            size="sm"
             onClick={() => setSelectedCategory("all")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              selectedCategory === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
+            className={cn(
+              "rounded-full",
+              selectedCategory === "all" && "shadow-sm"
+            )}
           >
             All
-          </button>
+          </Button>
           {categories.map((cat) => (
-            <button
+            <Button
               key={cat.id}
+              variant={selectedCategory === cat.id ? "default" : "outline"}
+              size="sm"
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedCategory === cat.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
+              className={cn(
+                "rounded-full",
+                selectedCategory === cat.id && "shadow-sm"
+              )}
             >
               {cat.icon} {cat.name}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map((quiz) => (
-          <QuizCard key={quiz.id} quiz={quiz} />
-        ))}
+      <div className="space-y-6">
+        {filtered.some((q) => q.id === "advanced-citizenship") && (
+          <div>
+            <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              Featured Challenge
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filtered
+                .filter((q) => q.id === "advanced-citizenship")
+                .map((quiz) => (
+                  <QuizCard key={quiz.id} quiz={quiz} variant="featured" />
+                ))}
+            </div>
+          </div>
+        )}
+        <div>
+          {filtered.some((q) => q.id === "advanced-citizenship") && (
+            <h2 className="font-display text-lg font-semibold text-foreground mb-3">All Quizzes</h2>
+          )}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered
+              .filter((q) => q.id !== "advanced-citizenship")
+              .map((quiz) => (
+                <QuizCard key={quiz.id} quiz={quiz} />
+              ))}
+          </div>
+        </div>
       </div>
       {filtered.length === 0 && (
         <div className="text-center py-16 text-muted-foreground">

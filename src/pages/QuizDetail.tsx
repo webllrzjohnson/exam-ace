@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, HelpCircle, TrendingUp, Target, BookOpen } from "lucide-react";
+import { Clock, HelpCircle, Shuffle, TrendingUp, Target, BookOpen } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import DifficultyBadge from "@/components/DifficultyBadge";
 
 type Quiz = {
@@ -19,11 +21,18 @@ type Quiz = {
   topics: string[];
 };
 
+const QUESTION_COUNTS = [5, 10, 15, 20, 25, 30, 40, 50] as const;
+const TIME_OPTIONS = [5, 10, 20, 30] as const;
+
 export default function QuizDetail({ id }: { id: string }) {
   const router = useRouter();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"practice" | "timed">("practice");
+  const [questionCount, setQuestionCount] = useState(20);
+  const [timeMinutes, setTimeMinutes] = useState<number | null>(30);
+
+  const isAdvanced = id === "advanced-citizenship";
 
   useEffect(() => {
     fetch(`/api/quizzes/${id}`)
@@ -33,7 +42,17 @@ export default function QuizDetail({ id }: { id: string }) {
   }, [id]);
 
   const handleStart = () => {
-    router.push(`/quiz/${quiz!.id}/play?mode=${mode}`);
+    if (isAdvanced) {
+      const params = new URLSearchParams({
+        mode: timeMinutes === null ? "practice" : "timed",
+        count: String(questionCount),
+      });
+      if (timeMinutes !== null) params.set("time", String(timeMinutes));
+      if (timeMinutes === null) params.set("untimed", "true");
+      router.push(`/quiz/${quiz!.id}/play?${params}`);
+    } else {
+      router.push(`/quiz/${quiz!.id}/play?mode=${mode}`);
+    }
   };
 
   if (loading) {
@@ -56,8 +75,8 @@ export default function QuizDetail({ id }: { id: string }) {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {[
-          { icon: HelpCircle, label: "Questions", value: quiz.questionCount },
-          { icon: Clock, label: "Time Limit", value: `${quiz.timeLimit} min` },
+          { icon: HelpCircle, label: "Questions", value: isAdvanced ? "Custom" : quiz.questionCount },
+          { icon: Clock, label: "Time Limit", value: isAdvanced ? "Custom" : `${quiz.timeLimit} min` },
           { icon: TrendingUp, label: "Pass Rate", value: `${quiz.passRate}%` },
           { icon: Target, label: "Avg Score", value: `${quiz.avgScore}%` },
         ].map((s) => (
@@ -83,29 +102,88 @@ export default function QuizDetail({ id }: { id: string }) {
         </div>
       </div>
 
-      <div className="mb-8">
-        <h2 className="font-display font-bold text-foreground mb-3">Select Mode</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => setMode("practice")}
-            className={`p-5 rounded-xl border-2 text-left transition-all ${
-              mode === "practice" ? "border-primary bg-primary/5" : "border-border bg-card hover:border-muted-foreground/30"
-            }`}
-          >
-            <div className="text-lg font-bold text-foreground mb-1">📝 Practice Mode</div>
-            <p className="text-sm text-muted-foreground">No time pressure. Get instant feedback after each question.</p>
-          </button>
-          <button
-            onClick={() => setMode("timed")}
-            className={`p-5 rounded-xl border-2 text-left transition-all ${
-              mode === "timed" ? "border-primary bg-primary/5" : "border-border bg-card hover:border-muted-foreground/30"
-            }`}
-          >
-            <div className="text-lg font-bold text-foreground mb-1">⏱️ Timed Exam</div>
-            <p className="text-sm text-muted-foreground">Simulate the real test with a countdown timer.</p>
-          </button>
+      {isAdvanced ? (
+        <>
+          <div className="mb-8">
+            <h2 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
+              <HelpCircle className="w-5 h-5 text-primary" />
+              Number of Questions
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {QUESTION_COUNTS.map((n) => (
+                <Button
+                  key={n}
+                  variant={questionCount === n ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setQuestionCount(n)}
+                  className="rounded-full"
+                >
+                  {n}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h2 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              Time Limit
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {TIME_OPTIONS.map((n) => (
+                <Button
+                  key={n}
+                  variant={timeMinutes === n ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTimeMinutes(n)}
+                  className="rounded-full"
+                >
+                  {n} min
+                </Button>
+              ))}
+              <Button
+                variant={timeMinutes === null ? "default" : "outline"}
+                size="sm"
+                onClick={() => setTimeMinutes(null)}
+                className="rounded-full"
+              >
+                Untimed
+              </Button>
+            </div>
+          </div>
+
+          <p className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+            <Shuffle className="w-4 h-4" />
+            Questions and question types are always randomized.
+          </p>
+        </>
+      ) : (
+        <div className="mb-8">
+          <h2 className="font-display font-bold text-foreground mb-3">Select Mode</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => setMode("practice")}
+              className={cn(
+                "p-5 rounded-xl border-2 text-left transition-all",
+                mode === "practice" ? "border-primary bg-primary/5" : "border-border bg-card hover:border-muted-foreground/30"
+              )}
+            >
+              <div className="text-lg font-bold text-foreground mb-1">📝 Practice Mode</div>
+              <p className="text-sm text-muted-foreground">No time pressure. Get instant feedback after each question.</p>
+            </button>
+            <button
+              onClick={() => setMode("timed")}
+              className={cn(
+                "p-5 rounded-xl border-2 text-left transition-all",
+                mode === "timed" ? "border-primary bg-primary/5" : "border-border bg-card hover:border-muted-foreground/30"
+              )}
+            >
+              <div className="text-lg font-bold text-foreground mb-1">⏱️ Timed Exam</div>
+              <p className="text-sm text-muted-foreground">Simulate the real test with a countdown timer.</p>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <button
         onClick={handleStart}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Clock, RotateCcw, Home, Eye } from "lucide-react";
 import { getQuizResult, clearQuizResult, setQuizReview } from "@/lib/quiz-storage";
@@ -19,11 +20,13 @@ type Question = {
 
 export default function ResultsPage({ id }: { id: string }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [quiz, setQuiz] = useState<{ questions: Question[] } | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [timeTaken, setTimeTaken] = useState(0);
   const [mode, setMode] = useState("practice");
   const [loading, setLoading] = useState(true);
+  const savedRef = useRef(false);
 
   useEffect(() => {
     const result = getQuizResult();
@@ -45,6 +48,36 @@ export default function ResultsPage({ id }: { id: string }) {
         .finally(() => setLoading(false));
     }
   }, [id, router]);
+
+  useEffect(() => {
+    if (!quiz || !session?.user || savedRef.current) return;
+    const questions = quiz.questions;
+    const correctCount = questions.filter((q) => {
+      const ans = answers[q.id];
+      if (!ans) return false;
+      if (Array.isArray(q.correctAnswer)) {
+        return Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a));
+      }
+      if (q.type === "fill") {
+        return typeof ans === "string" && ans.toLowerCase() === (q.correctAnswer as string).toLowerCase();
+      }
+      return ans === q.correctAnswer;
+    }).length;
+    const score = Math.round((correctCount / questions.length) * 100);
+    const passed = score >= 75;
+    savedRef.current = true;
+    fetch("/api/quiz-attempts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        quizId: id,
+        score,
+        timeTaken,
+        mode,
+        passed,
+      }),
+    }).catch(() => {});
+  }, [quiz, answers, timeTaken, mode, id, session?.user]);
 
   if (loading || !quiz) {
     return <div className="container py-20 text-center text-muted-foreground">Loading...</div>;

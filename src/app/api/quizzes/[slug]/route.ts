@@ -4,12 +4,25 @@ import { getQuizBySlug } from "@/lib/queries/quiz";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: { slug: string } }
 ) {
   try {
     const { slug } = params;
-    const quiz = await getQuizBySlug(slug);
+    const { searchParams } = new URL(request.url);
+    const countParam = searchParams.get("count");
+    const timeParam = searchParams.get("time");
+    const untimed = searchParams.get("untimed") === "true";
+
+    const options =
+      slug === "advanced-citizenship" && countParam
+        ? {
+            count: Math.min(50, Math.max(5, parseInt(countParam, 10) || 20)),
+            timeLimit: untimed ? 9999 : (timeParam ? parseInt(timeParam, 10) : 30),
+          }
+        : undefined;
+
+    const quiz = await getQuizBySlug(slug, options);
     if (!quiz) {
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
@@ -22,7 +35,7 @@ export async function GET(
       categoryIcon: quiz.categoryIcon,
       difficulty: quiz.difficulty,
       questionCount: quiz.questions.length,
-      timeLimit: quiz.timeLimit,
+      timeLimit: options ? options.timeLimit : quiz.timeLimit,
       passRate: quiz.passRate,
       avgScore: quiz.avgScore,
       topics: quiz.topics,

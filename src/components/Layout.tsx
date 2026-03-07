@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Home, LayoutGrid, ClipboardList, Trophy, User, Menu, X, Shield } from "lucide-react";
+import { BookOpen, Home, LayoutGrid, ClipboardList, Trophy, User, Menu, X, Shield, Layers, LogIn } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
@@ -10,6 +10,7 @@ import { useSession, signOut } from "next-auth/react";
 const navItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/quizzes", label: "Quiz Catalog", icon: LayoutGrid },
+  { to: "/flashcards", label: "Flashcards", icon: Layers },
   { to: "/simulation", label: "Simulation", icon: ClipboardList },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/dashboard", label: "Dashboard", icon: User },
@@ -47,22 +48,32 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-            <Link
-              href="/admin"
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                pathname.startsWith("/admin") ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Shield className="w-4 h-4" />
-              Admin
-            </Link>
-            {session && (
+            {session?.user?.role === "admin" && (
+              <Link
+                href="/admin"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith("/admin") ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </Link>
+            )}
+            {session ? (
               <button
-                onClick={() => signOut()}
+                onClick={() => signOut({ callbackUrl: "/" })}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 Sign out
               </button>
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                <LogIn className="w-4 h-4" />
+                Login
+              </Link>
             )}
           </nav>
 
@@ -99,14 +110,36 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     </Link>
                   );
                 })}
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
-                >
-                  <Shield className="w-4 h-4" />
-                  Admin
-                </Link>
+                {session?.user?.role === "admin" && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Admin
+                  </Link>
+                )}
+                {session ? (
+                  <button
+                    onClick={() => {
+                      signOut({ callbackUrl: "/" });
+                      setMobileOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted w-full text-left"
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Login
+                  </Link>
+                )}
               </div>
             </motion.nav>
           )}
