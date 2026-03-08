@@ -24,12 +24,13 @@ type Quiz = {
 const QUESTION_COUNTS = [5, 10, 15, 20, 25, 30, 40, 50] as const;
 const TIME_OPTIONS = [5, 10, 20, 30] as const;
 
-export default function QuizDetail({ id }: { id: string }) {
+export default function QuizDetail({ id, countFromCatalog }: { id: string; countFromCatalog?: string }) {
   const router = useRouter();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"practice" | "timed">("practice");
-  const [questionCount, setQuestionCount] = useState(20);
+  const catalogCount = countFromCatalog ? parseInt(countFromCatalog, 10) : undefined;
+  const [questionCount, setQuestionCount] = useState(catalogCount ?? 20);
   const [timeMinutes, setTimeMinutes] = useState<number | null>(30);
 
   const isAdvanced = id === "advanced-citizenship";
@@ -51,7 +52,10 @@ export default function QuizDetail({ id }: { id: string }) {
       if (timeMinutes === null) params.set("untimed", "true");
       router.push(`/quiz/${quiz!.id}/play?${params}`);
     } else {
-      router.push(`/quiz/${quiz!.id}/play?mode=${mode}`);
+      const params = new URLSearchParams({ mode });
+      const count = catalogCount && catalogCount >= 5 && catalogCount <= 50 ? catalogCount : undefined;
+      if (count) params.set("count", String(count));
+      router.push(`/quiz/${quiz!.id}/play?${params}`);
     }
   };
 

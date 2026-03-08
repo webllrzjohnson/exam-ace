@@ -51,7 +51,8 @@ export async function getQuizBySlug(slug: string, options?: { count?: number; ti
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    return { ...quiz, questions: shuffled };
+    const take = options?.count ? Math.min(options.count, shuffled.length) : shuffled.length;
+    return { ...quiz, questions: shuffled.slice(0, take) };
   }
 
   return quiz;

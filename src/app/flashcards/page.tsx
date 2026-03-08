@@ -8,7 +8,8 @@ export const metadata = {
 
 export default async function FlashcardsRoute() {
   const sets = await getFlashcardSetsMeta();
-  const totalCards = sets.reduce((sum, s) => sum + s.cardCount, 0);
+  const allSet = sets.find((s) => s.id === "all");
+  const totalCards = allSet ? allSet.cardCount : sets.reduce((sum, s) => sum + s.cardCount, 0);
   const firstSetWithCards = sets.find((s) => s.cardCount > 0);
 
   return (

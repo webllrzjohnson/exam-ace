@@ -44,10 +44,14 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
   const [startTime, setStartTime] = useState(0);
   const [finished, setFinished] = useState(false);
 
-  const apiUrl =
-    id === "advanced-citizenship" && count
-      ? `/api/quizzes/${id}?count=${count}${time ? `&time=${time}` : ""}${untimed ? "&untimed=true" : ""}`
-      : `/api/quizzes/${id}`;
+  const params = new URLSearchParams();
+  if (count) params.set("count", count);
+  if (id === "advanced-citizenship") {
+    if (time) params.set("time", time);
+    if (untimed) params.set("untimed", "true");
+  }
+  const query = params.toString();
+  const apiUrl = query ? `/api/quizzes/${id}?${query}` : `/api/quizzes/${id}`;
 
   useEffect(() => {
     fetch(apiUrl)
@@ -229,8 +233,7 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
                       key={i}
                       onClick={() => !showFeedback && toggleOption(opt)}
                       disabled={showFeedback}
-                      className={`w-full text-left px-5 py-4 rounded-xl border-2 font-medium text-base transition-all ${
-                        showFeedback
+                      className={`w-full text-left px-5 py-4 rounded-xl border-2 font-medium text-base transition-all ${showFeedback
                           ? isRight
                             ? "border-success bg-success/10 text-foreground"
                             : isWrong
@@ -239,12 +242,11 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
                           : isSelected
                             ? "border-primary bg-primary/5 text-foreground"
                             : "border-border bg-card text-foreground hover:border-primary/40"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <span
-                          className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 ${
-                            showFeedback
+                          className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 ${showFeedback
                               ? isRight
                                 ? "border-success bg-success text-success-foreground"
                                 : isWrong
@@ -253,7 +255,7 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
                               : isSelected
                                 ? "border-primary bg-primary text-primary-foreground"
                                 : "border-muted-foreground/30 text-muted-foreground"
-                          }`}
+                            }`}
                         >
                           {showFeedback && isRight ? (
                             <CheckCircle className="w-4 h-4" />
@@ -275,9 +277,8 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mt-6 p-5 rounded-xl border ${
-                  currentIsCorrect() ? "bg-success/5 border-success/30" : "bg-destructive/5 border-destructive/30"
-                }`}
+                className={`mt-6 p-5 rounded-xl border ${currentIsCorrect() ? "bg-success/5 border-success/30" : "bg-destructive/5 border-destructive/30"
+                  }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   {currentIsCorrect() ? (

@@ -51,7 +51,7 @@ const ImportQuestionSchema = z.discriminatedUnion("type", [
 
 const ImportSchema = z.object({
   quizId: z.string().min(1),
-  questions: z.array(ImportQuestionSchema).min(1).max(500),
+  questions: z.array(ImportQuestionSchema).min(1).max(2000),
 });
 
 export async function POST(request: NextRequest) {

@@ -87,10 +87,24 @@ export async function getStreak(userId: string): Promise<number> {
   return streak;
 }
 
+export type CategoryProgress = {
+  categoryName: string;
+  categorySlug: string;
+  categoryIcon: string;
+  attemptCount: number;
+  totalTimeSeconds: number;
+  passedCount: number;
+  avgScore: number;
+  lastAttemptAt: Date;
+};
+
 export type UserProgress = {
   quizCount: number;
   avgScore: number;
   streak: number;
+  passedCount: number;
+  totalTimeSeconds: number;
+  categoryProgress: CategoryProgress[];
   recentAttempts: Array<{
     id: string;
     quizId: string;
@@ -100,11 +114,13 @@ export type UserProgress = {
     mode: string;
     completedAt: Date;
     quizTitle?: string;
+    categoryName?: string;
+    questionCount?: number;
   }>;
 };
 
 export async function getUserProgress(userId: string): Promise<UserProgress> {
-  const [attempts, quizCount, avgResult, streak] = await Promise.all([
+  const [attempts, quizCount, avgResult, streak, allAttemptsForCategories] = await Promise.all([
     db.quizAttempt.findMany({
       where: { userId },
       select: {
@@ -123,28 +139,104 @@ export async function getUserProgress(userId: string): Promise<UserProgress> {
     db.quizAttempt.aggregate({
       where: { userId },
       _avg: { score: true },
+      _sum: { timeTaken: true },
     }),
     getStreak(userId),
+    db.quizAttempt.findMany({
+      where: { userId },
+      select: { quizId: true, score: true, passed: true, timeTaken: true, completedAt: true },
+    }),
   ]);
 
-  const quizIds = Array.from(new Set(attempts.map((a) => a.quizId)));
+  const quizIds = Array.from(new Set([...attempts.map((a) => a.quizId), ...allAttemptsForCategories.map((a) => a.quizId)]));
   const quizzes = await db.quiz.findMany({
     where: { OR: [{ id: { in: quizIds } }, { slug: { in: quizIds } }] },
-    select: { id: true, slug: true, title: true },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      categoryId: true,
+      category: { select: { name: true, slug: true, icon: true } },
+      _count: { select: { questions: true } },
+    },
   });
-  const quizMap = new Map<string, string>();
+
+  const quizMap = new Map<
+    string,
+    { title: string; categoryName: string; categorySlug: string; categoryIcon: string; questionCount: number }
+  >();
   for (const q of quizzes) {
-    quizMap.set(q.id, q.title);
-    quizMap.set(q.slug, q.title);
+    const info = {
+      title: q.title,
+      categoryName: q.category.name,
+      categorySlug: q.category.slug,
+      categoryIcon: q.category.icon,
+      questionCount: q._count.questions,
+    };
+    quizMap.set(q.id, info);
+    quizMap.set(q.slug, info);
   }
+
+  const categoryMap = new Map<
+    string,
+    { attemptCount: number; totalTime: number; passedCount: number; scoreSum: number; lastAttempt: Date }
+  >();
+  for (const a of allAttemptsForCategories) {
+    const quiz = quizMap.get(a.quizId);
+    if (!quiz) continue;
+    const slug = quiz.categorySlug;
+    const existing = categoryMap.get(slug);
+    if (existing) {
+      existing.attemptCount++;
+      existing.totalTime += a.timeTaken;
+      if (a.passed) existing.passedCount++;
+      existing.scoreSum += a.score;
+      if (a.completedAt > existing.lastAttempt) existing.lastAttempt = a.completedAt;
+    } else {
+      categoryMap.set(slug, {
+        attemptCount: 1,
+        totalTime: a.timeTaken,
+        passedCount: a.passed ? 1 : 0,
+        scoreSum: a.score,
+        lastAttempt: a.completedAt,
+      });
+    }
+  }
+
+  const categoryProgress: CategoryProgress[] = [];
+  for (const [slug, data] of Array.from(categoryMap.entries())) {
+    const firstQuiz = quizzes.find((q) => q.category.slug === slug);
+    if (!firstQuiz) continue;
+    categoryProgress.push({
+      categoryName: firstQuiz.category.name,
+      categorySlug: slug,
+      categoryIcon: firstQuiz.category.icon,
+      attemptCount: data.attemptCount,
+      totalTimeSeconds: data.totalTime,
+      passedCount: data.passedCount,
+      avgScore: Math.round(data.scoreSum / data.attemptCount),
+      lastAttemptAt: data.lastAttempt,
+    });
+  }
+  categoryProgress.sort((a, b) => b.lastAttemptAt.getTime() - a.lastAttemptAt.getTime());
+
+  const passedCount = allAttemptsForCategories.filter((a) => a.passed).length;
 
   return {
     quizCount,
     avgScore: avgResult._avg.score ? Math.round(avgResult._avg.score) : 0,
     streak,
-    recentAttempts: attempts.map((a) => ({
-      ...a,
-      quizTitle: quizMap.get(a.quizId) ?? undefined,
-    })),
+    passedCount,
+    totalTimeSeconds: avgResult._sum.timeTaken ?? 0,
+    categoryProgress,
+    recentAttempts: attempts.map((a) => {
+      const q = quizMap.get(a.quizId);
+      return {
+        ...a,
+        quizTitle: q?.title ?? undefined,
+        categoryName: q?.categoryName ?? undefined,
+        questionCount: q?.questionCount ?? undefined,
+      };
+    }),
   };
 }

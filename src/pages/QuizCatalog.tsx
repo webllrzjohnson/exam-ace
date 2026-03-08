@@ -30,6 +30,7 @@ export default function QuizCatalog() {
   const initialCategory = searchParams.get("category") || "all";
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [search, setSearch] = useState("");
+  const [questionCount, setQuestionCount] = useState(20);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,11 +140,27 @@ export default function QuizCatalog() {
           {filtered.some((q) => q.id === "advanced-citizenship") && (
             <h2 className="font-display text-lg font-semibold text-foreground mb-3">All Quizzes</h2>
           )}
+          <div className="mb-4">
+            <p className="text-sm font-medium text-muted-foreground mb-2">Number of questions</p>
+            <div className="flex flex-wrap gap-2">
+              {([5, 10, 15, 20, 25, 30, 50] as const).map((n) => (
+                <Button
+                  key={n}
+                  variant={questionCount === n ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setQuestionCount(n)}
+                  className="rounded-full"
+                >
+                  {n}
+                </Button>
+              ))}
+            </div>
+          </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered
               .filter((q) => q.id !== "advanced-citizenship")
               .map((quiz) => (
-                <QuizCard key={quiz.id} quiz={quiz} />
+                <QuizCard key={quiz.id} quiz={quiz} questionCount={questionCount} />
               ))}
           </div>
         </div>

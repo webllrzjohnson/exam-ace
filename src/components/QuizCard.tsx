@@ -15,11 +15,20 @@ type Quiz = {
   passRate: number;
 };
 
-export default function QuizCard({ quiz, variant }: { quiz: Quiz; variant?: "default" | "featured" }) {
+export default function QuizCard({
+  quiz,
+  variant,
+  questionCount,
+}: {
+  quiz: Quiz;
+  variant?: "default" | "featured";
+  questionCount?: number;
+}) {
   const isFeatured = variant === "featured";
+  const href = questionCount ? `/quiz/${quiz.id}?count=${questionCount}` : `/quiz/${quiz.id}`;
   return (
     <Link
-      href={`/quiz/${quiz.id}`}
+      href={href}
       className={cn(
         "group block rounded-xl border p-5 shadow-card transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5",
         isFeatured

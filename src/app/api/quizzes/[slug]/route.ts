@@ -14,13 +14,16 @@ export async function GET(
     const timeParam = searchParams.get("time");
     const untimed = searchParams.get("untimed") === "true";
 
-    const options =
-      slug === "advanced-citizenship" && countParam
-        ? {
-            count: Math.min(50, Math.max(5, parseInt(countParam, 10) || 20)),
-            timeLimit: untimed ? 9999 : (timeParam ? parseInt(timeParam, 10) : 30),
-          }
-        : undefined;
+    const countVal = countParam ? Math.min(50, Math.max(5, parseInt(countParam, 10) || 20)) : undefined;
+    let options: { count?: number; timeLimit?: number } | undefined;
+    if (slug === "advanced-citizenship" && countVal) {
+      options = {
+        count: countVal,
+        timeLimit: untimed ? 9999 : (timeParam ? parseInt(timeParam, 10) : 30),
+      };
+    } else if (slug !== "advanced-citizenship" && countVal) {
+      options = { count: countVal };
+    }
 
     const quiz = await getQuizBySlug(slug, options);
     if (!quiz) {
