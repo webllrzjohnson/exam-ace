@@ -25,14 +25,15 @@ async function main() {
     { slug: "government", name: "Government & Democracy", icon: "🏛️", description: "Understand Canada's government", color: "bg-canada-red/10 text-canada-red" },
     { slug: "geography", name: "Geography & Regions", icon: "🗺️", description: "Know Canada's provinces", color: "bg-warning/10 text-warning" },
     { slug: "symbols", name: "Symbols & Anthem", icon: "🍁", description: "Canadian symbols", color: "bg-accent/10 text-accent" },
-    { slug: "economy", name: "Economy & Industry", icon: "💼", description: "Canada's economy", color: "bg-primary/10 text-primary" },
+    { slug: "economy", name: "Canadian Economy & Industry", icon: "💼", description: "Canada's economy", color: "bg-primary/10 text-primary" },
+    { slug: "culture", name: "Canadian Culture & Society", icon: "🎭", description: "Explore Canadian culture and multiculturalism", color: "bg-primary/10 text-primary" },
   ];
 
   for (const cat of categories) {
     await db.category.upsert({
       where: { slug: cat.slug },
       create: cat,
-      update: {},
+      update: { name: cat.name, description: cat.description, icon: cat.icon, color: cat.color },
     });
   }
 
@@ -95,15 +96,36 @@ async function main() {
     { type: "single" as const, question: "What is Canada's largest trading partner?", options: ["China", "United Kingdom", "United States", "Mexico"], correctAnswer: "United States", explanation: "The US is Canada's largest trading partner.", topic: "Trade", difficulty: "Easy" },
     { type: "single" as const, question: "Which sector employs the most Canadians?", options: ["Manufacturing", "Natural resources", "Services", "Agriculture"], correctAnswer: "Services", explanation: "The service sector employs about 75% of Canadians.", topic: "Economy", difficulty: "Medium" },
     { type: "fill" as const, question: "Canada is a member of the _____ free trade agreement with the US and Mexico.", correctAnswer: "USMCA", explanation: "USMCA (United States-Mexico-Canada Agreement) replaced NAFTA.", topic: "Trade", difficulty: "Hard" },
+    { type: "single" as const, question: "Which natural resource is Canada a major global exporter of?", options: ["Diamonds", "Oil and gas", "Timber", "All of the above"], correctAnswer: "All of the above", explanation: "Canada exports oil, gas, timber, minerals, and other natural resources.", topic: "Natural Resources", difficulty: "Easy" },
+    { type: "boolean" as const, question: "NAFTA was replaced by the USMCA in 2020.", options: ["True", "False"], correctAnswer: "True", explanation: "USMCA came into force on July 1, 2020.", topic: "Trade", difficulty: "Medium" },
+    { type: "single" as const, question: "What is one of Canada's key manufacturing industries?", options: ["Automotive", "Aerospace", "Pharmaceuticals", "All of the above"], correctAnswer: "All of the above", explanation: "Canada has strong automotive, aerospace, and pharmaceutical sectors.", topic: "Industry", difficulty: "Medium" },
+    { type: "single" as const, question: "Which province is known for its oil sands industry?", options: ["Ontario", "Quebec", "Alberta", "British Columbia"], correctAnswer: "Alberta", explanation: "Alberta's oil sands are among the world's largest reserves.", topic: "Natural Resources", difficulty: "Easy" },
+    { type: "fill" as const, question: "The _____ is Canada's central bank, responsible for monetary policy.", correctAnswer: "Bank of Canada", explanation: "The Bank of Canada manages inflation and the currency.", topic: "Economy", difficulty: "Medium" },
+    { type: "single" as const, question: "What currency does Canada use?", options: ["US Dollar", "Canadian Dollar", "British Pound", "Euro"], correctAnswer: "Canadian Dollar", explanation: "The Canadian dollar (CAD) is the national currency.", topic: "Economy", difficulty: "Easy" },
+    { type: "multiple" as const, question: "Which are major Canadian exports?", options: ["Automobiles", "Lumber", "Wheat", "Diamonds"], correctAnswer: ["Automobiles", "Lumber", "Wheat"], explanation: "Canada exports vehicles, lumber, wheat, and many other goods.", topic: "Trade", difficulty: "Medium" },
+    { type: "single" as const, question: "Which organization helps protect workers' rights in Canada?", options: ["Labour unions", "Chambers of Commerce", "Stock exchanges", "Banks"], correctAnswer: "Labour unions", explanation: "Unions negotiate wages and working conditions.", topic: "Economy", difficulty: "Easy" },
+    { type: "boolean" as const, question: "Canada has a mixed economy with both private and public sectors.", options: ["True", "False"], correctAnswer: "True", explanation: "Canada combines free-market enterprise with government services.", topic: "Economy", difficulty: "Easy" },
+    { type: "single" as const, question: "Which province is a major hub for the film and television industry?", options: ["Alberta", "Ontario", "British Columbia", "Both Ontario and British Columbia"], correctAnswer: "Both Ontario and British Columbia", explanation: "Toronto and Vancouver are major production centres.", topic: "Industry", difficulty: "Hard" },
   ];
 
   const cultureQuestions = [
     { type: "single" as const, question: "What are the two official languages of Canada?", options: ["English and Spanish", "English and French", "French and German", "English and Indigenous"], correctAnswer: "English and French", explanation: "English and French are Canada's official languages.", topic: "Languages", difficulty: "Easy" },
     { type: "boolean" as const, question: "Canada is known for its policy of multiculturalism.", options: ["True", "False"], correctAnswer: "True", explanation: "Multiculturalism is a fundamental Canadian value.", topic: "Multiculturalism", difficulty: "Easy" },
     { type: "single" as const, question: "Which group of people are recognized as one of Canada's founding peoples?", options: ["French only", "British only", "Indigenous peoples, French, and British", "Americans"], correctAnswer: "Indigenous peoples, French, and British", explanation: "Canada recognizes three founding peoples.", topic: "Society", difficulty: "Medium" },
+    { type: "single" as const, question: "In which province is French the only official language?", options: ["Ontario", "New Brunswick", "Quebec", "Manitoba"], correctAnswer: "Quebec", explanation: "Quebec's only official language is French.", topic: "Languages", difficulty: "Easy" },
+    { type: "boolean" as const, question: "New Brunswick is the only officially bilingual province.", options: ["True", "False"], correctAnswer: "True", explanation: "New Brunswick has equal status for English and French.", topic: "Languages", difficulty: "Medium" },
+    { type: "single" as const, question: "What does the Canadian Multiculturalism Act affirm?", options: ["English only", "Preservation of heritage languages and cultures", "Assimilation", "One culture for all"], correctAnswer: "Preservation of heritage languages and cultures", explanation: "The Act promotes diversity and cultural preservation.", topic: "Multiculturalism", difficulty: "Medium" },
+    { type: "fill" as const, question: "The _____ peoples were the first to live in Canada.", correctAnswer: "Indigenous", explanation: "Indigenous peoples have lived in Canada for thousands of years.", topic: "Society", difficulty: "Easy" },
+    { type: "single" as const, question: "Which Canadian city is known for its diverse cultural festivals?", options: ["Only Toronto", "Only Vancouver", "Many cities across Canada", "Only Montreal"], correctAnswer: "Many cities across Canada", explanation: "Cities across Canada celebrate diverse cultural festivals.", topic: "Multiculturalism", difficulty: "Easy" },
+    { type: "multiple" as const, question: "Which are values shared by Canadians?", options: ["Equality", "Respect for cultural differences", "Hard work", "Helping others"], correctAnswer: ["Equality", "Respect for cultural differences", "Hard work", "Helping others"], explanation: "These are core Canadian values.", topic: "Society", difficulty: "Medium" },
+    { type: "single" as const, question: "What is the significance of the potlatch in Indigenous culture?", options: ["A type of food", "A ceremonial feast and gift-giving", "A dance", "A language"], correctAnswer: "A ceremonial feast and gift-giving", explanation: "Potlatch is a traditional ceremony of many West Coast Indigenous peoples.", topic: "Society", difficulty: "Hard" },
+    { type: "boolean" as const, question: "Canadian law requires employers to accommodate religious practices where possible.", options: ["True", "False"], correctAnswer: "True", explanation: "Human rights law protects religious freedom in the workplace.", topic: "Multiculturalism", difficulty: "Medium" },
+    { type: "single" as const, question: "Which symbol represents Canada's bilingual nature?", options: ["The beaver", "The maple leaf", "The flag", "All official documents in both languages"], correctAnswer: "All official documents in both languages", explanation: "Federal services and documents are available in English and French.", topic: "Languages", difficulty: "Easy" },
+    { type: "single" as const, question: "What does 'mosaic' often describe in Canadian society?", options: ["A type of art", "Different cultures coexisting while keeping their identity", "Assimilation", "A single culture"], correctAnswer: "Different cultures coexisting while keeping their identity", explanation: "Canada is often described as a cultural mosaic.", topic: "Multiculturalism", difficulty: "Medium" },
   ];
 
   const economyCat = await db.category.findUniqueOrThrow({ where: { slug: "economy" } });
+  const cultureCat = await db.category.findUniqueOrThrow({ where: { slug: "culture" } });
 
   const quizData = [
     { slug: "canadian-history-basics", title: "Canadian History Basics", description: "Test your knowledge of Canada's history.", categoryId: historyCat.id, categoryIcon: "🏛️", difficulty: "Easy", timeLimit: 15, passRate: 78, avgScore: 72, featured: true, topics: ["Confederation", "Prime Ministers", "Military History"], questions: historyQuestions },
@@ -111,8 +133,8 @@ async function main() {
     { slug: "government-and-democracy", title: "Government & Democracy", description: "Learn how Canada's government works.", categoryId: govCat.id, categoryIcon: "🏛️", difficulty: "Medium", timeLimit: 10, passRate: 70, avgScore: 65, featured: true, topics: ["System of Government", "Parliament", "Elections"], questions: governmentQuestions },
     { slug: "geography-of-canada", title: "Geography of Canada", description: "Discover Canada's geography.", categoryId: geoCat.id, categoryIcon: "🗺️", difficulty: "Easy", timeLimit: 15, passRate: 80, avgScore: 75, featured: false, topics: ["Provinces", "Territories"], questions: geographyQuestions },
     { slug: "canadian-symbols", title: "Canadian Symbols & Anthem", description: "How well do you know Canada's symbols?", categoryId: symCat.id, categoryIcon: "🍁", difficulty: "Easy", timeLimit: 10, passRate: 85, avgScore: 80, featured: false, topics: ["Flag", "National Anthem"], questions: rightsQuestions.map((q, i) => ({ ...q, topic: "Symbols" })) },
-    { slug: "economy-and-industry", title: "Economy & Industry", description: "Learn about Canada's economy and trade.", categoryId: economyCat.id, categoryIcon: "💼", difficulty: "Medium", timeLimit: 10, passRate: 70, avgScore: 65, featured: false, topics: ["Trade", "Economy"], questions: economyQuestions },
-    { slug: "culture-and-society", title: "Culture & Society", description: "Discover Canadian culture and multiculturalism.", categoryId: historyCat.id, categoryIcon: "🎭", difficulty: "Easy", timeLimit: 10, passRate: 85, avgScore: 80, featured: false, topics: ["Languages", "Multiculturalism", "Society"], questions: cultureQuestions },
+    { slug: "canadian-economy-industry", title: "Canadian Economy & Industry", description: "Learn about Canada's economy and trade.", categoryId: economyCat.id, categoryIcon: "💼", difficulty: "Medium", timeLimit: 10, passRate: 70, avgScore: 65, featured: false, topics: ["Trade", "Economy"], questions: economyQuestions },
+    { slug: "canadian-culture-society", title: "Canadian Culture & Society", description: "Discover Canadian culture and multiculturalism.", categoryId: cultureCat.id, categoryIcon: "🎭", difficulty: "Easy", timeLimit: 10, passRate: 85, avgScore: 80, featured: false, topics: ["Languages", "Multiculturalism", "Society"], questions: cultureQuestions },
     { slug: "advanced-citizenship", title: "Advanced Citizenship Prep", description: "Comprehensive quiz for the real exam.", categoryId: historyCat.id, categoryIcon: "🏛️", difficulty: "Hard", timeLimit: 30, passRate: 55, avgScore: 58, featured: true, topics: ["Canadian History", "Culture and Society", "Economy and Industry", "Geography and Regions", "Government and Democracy", "Rights and Responsibilities", "Symbols and Anthems"], questions: [...historyQuestions, ...rightsQuestions, ...governmentQuestions, ...geographyQuestions, ...economyQuestions, ...cultureQuestions].slice(0, 20) },
   ];
 
@@ -124,8 +146,13 @@ async function main() {
       update: {},
     });
     const existingCount = await db.question.count({ where: { quizId: quiz.id } });
-    if (existingCount === 0) {
-      for (const qu of questions) {
+    const shouldAddMissing =
+      (quizMeta.slug === "canadian-economy-industry" || quizMeta.slug === "canadian-culture-society") &&
+      existingCount > 0 &&
+      existingCount < questions.length;
+    if (existingCount === 0 || shouldAddMissing) {
+      const toCreate = shouldAddMissing ? questions.slice(existingCount) : questions;
+      for (const qu of toCreate) {
         await db.question.create({
           data: {
             quizId: quiz.id,

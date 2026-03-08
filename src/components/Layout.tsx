@@ -2,18 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Home, LayoutGrid, ClipboardList, Trophy, User, Menu, X, Shield, Layers, LogIn } from "lucide-react";
+import { Home, LayoutGrid, ClipboardList, Trophy, User, Menu, X, Shield, Layers, LogIn, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
 
-const navItems = [
+async function handleSignOut() {
+  await signOut({ redirect: false });
+  window.location.href = "/";
+}
+
+const baseNavItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/quizzes", label: "Quiz Catalog", icon: LayoutGrid },
   { to: "/flashcards", label: "Flashcards", icon: Layers },
   { to: "/simulation", label: "Simulation", icon: ClipboardList },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { to: "/dashboard", label: "Dashboard", icon: User },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -33,7 +37,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
+            {baseNavItems.map((item) => {
               const active = pathname === item.to;
               return (
                 <Link
@@ -48,6 +52,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            {session && (
+              <Link
+                href="/dashboard"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === "/dashboard" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                <User className="w-4 h-4" />
+                Dashboard
+              </Link>
+            )}
             {session?.user?.role === "admin" && (
               <Link
                 href="/admin"
@@ -61,19 +76,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             )}
             {session ? (
               <button
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => handleSignOut()}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 Sign out
               </button>
             ) : (
-              <Link
-                href="/login"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
-              >
-                <LogIn className="w-4 h-4" />
-                Login
-              </Link>
+              <>
+                <Link
+                  href="/register"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Register
+                </Link>
+                <Link
+                  href="/login"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Login
+                </Link>
+              </>
             )}
           </nav>
 
@@ -94,7 +118,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               className="md:hidden border-t border-border overflow-hidden bg-card"
             >
               <div className="container py-3 flex flex-col gap-1">
-                {navItems.map((item) => {
+                {baseNavItems.map((item) => {
                   const active = pathname === item.to;
                   return (
                     <Link
@@ -110,6 +134,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     </Link>
                   );
                 })}
+                {session && (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      pathname === "/dashboard" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <User className="w-4 h-4" />
+                    Dashboard
+                  </Link>
+                )}
                 {session?.user?.role === "admin" && (
                   <Link
                     href="/admin"
@@ -123,7 +159,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {session ? (
                   <button
                     onClick={() => {
-                      signOut({ callbackUrl: "/" });
+                      handleSignOut();
                       setMobileOpen(false);
                     }}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted w-full text-left"
@@ -131,14 +167,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     Sign out
                   </button>
                 ) : (
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    Login
-                  </Link>
+                  <>
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      Register
+                    </Link>
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      Login
+                    </Link>
+                  </>
                 )}
               </div>
             </motion.nav>

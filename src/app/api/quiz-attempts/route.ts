@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { auth } from "@/lib/auth";
-import { saveQuizAttempt } from "@/lib/actions/quiz-attempt";
+import { saveQuizAttempt, type SaveQuizAttemptInput } from "@/lib/actions/quiz-attempt";
 
 const BodySchema = z.object({
   quizId: z.string().min(1),
@@ -25,7 +25,7 @@ export async function POST(req: Request): Promise<Response> {
   const parsed = BodySchema.safeParse(json);
   if (!parsed.success) return Response.json({ error: "Invalid input" }, { status: 400 });
 
-  const result = await saveQuizAttempt(parsed.data);
+  const result = await saveQuizAttempt(parsed.data as SaveQuizAttemptInput);
   if (!result.success) {
     return Response.json({ error: result.error ?? "Failed to save" }, { status: 500 });
   }

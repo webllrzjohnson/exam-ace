@@ -65,7 +65,7 @@ export async function getStreak(userId: string): Promise<number> {
     orderBy: { completedAt: "desc" },
   });
 
-  const uniqueDates = [...new Set(attempts.map((a) => a.completedAt.toISOString().slice(0, 10)))].sort().reverse();
+  const uniqueDates = Array.from(new Set(attempts.map((a) => a.completedAt.toISOString().slice(0, 10)))).sort().reverse();
   if (uniqueDates.length === 0) return 0;
 
   let streak = 0;
@@ -127,7 +127,7 @@ export async function getUserProgress(userId: string): Promise<UserProgress> {
     getStreak(userId),
   ]);
 
-  const quizIds = [...new Set(attempts.map((a) => a.quizId))];
+  const quizIds = Array.from(new Set(attempts.map((a) => a.quizId)));
   const quizzes = await db.quiz.findMany({
     where: { OR: [{ id: { in: quizIds } }, { slug: { in: quizIds } }] },
     select: { id: true, slug: true, title: true },

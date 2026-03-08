@@ -18,6 +18,17 @@ model User {
   quizAttempts QuizAttempt[]
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+}
+
 model QuizAttempt {
   id         String   @id @default(cuid())
   userId     String
