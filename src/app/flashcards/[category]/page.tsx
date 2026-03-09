@@ -1,8 +1,10 @@
 import { getFlashcardSetsMeta } from "@/lib/queries/flashcard";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import FlashcardSessionSetup from "@/components/FlashcardSessionSetup";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { isPremium } from "@/lib/access-control";
 
 type Props = {
   params: Promise<{ category: string }>;
@@ -21,6 +23,11 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function FlashcardCategoryPage({ params }: Props) {
+  const session = await auth();
+  if (!isPremium(session)) {
+    redirect("/upgrade");
+  }
+
   const { category } = await params;
   const sets = await getFlashcardSetsMeta();
   const set = sets.find((s) => s.id === category);

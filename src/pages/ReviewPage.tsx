@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { CheckCircle, XCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle, XCircle, ArrowLeft, Crown } from "lucide-react";
 import { getQuizReview, clearQuizReview } from "@/lib/quiz-storage";
 
 type Question = {
@@ -18,6 +20,7 @@ type Question = {
 
 export default function ReviewPage({ id }: { id: string }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [quiz, setQuiz] = useState<{ id: string } | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [wrongQuestions, setWrongQuestions] = useState<Question[]>([]);
@@ -75,11 +78,34 @@ export default function ReviewPage({ id }: { id: string }) {
       <h1 className="font-display text-2xl font-bold text-foreground mb-2">
         {showAll ? "Review All Answers" : "Review Wrong Answers"}
       </h1>
-      <p className="text-muted-foreground mb-8">
+      <p className="text-muted-foreground mb-6">
         {showAll
           ? "Review each question with the correct answer and explanation."
           : `You got ${wrongQuestions.length} question${wrongQuestions.length > 1 ? "s" : ""} wrong. Study the explanations below.`}
       </p>
+
+      {!session?.user && (
+        <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 mb-8">
+          <div className="flex items-start gap-3">
+            <Crown className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-foreground text-sm">
+                Premium members get more
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Flashcards, simulation exams, custom question counts, and instant feedback during practice.
+              </p>
+              <Link
+                href="/upgrade"
+                className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-primary hover:underline"
+              >
+                Explore premium
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-6">
         {wrongQuestions.map((q, i) => {

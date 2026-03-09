@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { CheckCircle, XCircle, Clock, RotateCcw, Home, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Clock, RotateCcw, Home, Eye, Crown } from "lucide-react";
+import { isFillAnswerCorrect } from "@/lib/utils";
 import { getQuizResult, clearQuizResult, setQuizReview } from "@/lib/quiz-storage";
+import { canAccessFeature, getUserTier } from "@/lib/access-control";
 
 type Question = {
   id: string;
@@ -59,7 +62,7 @@ export default function ResultsPage({ id }: { id: string }) {
         return Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a));
       }
       if (q.type === "fill") {
-        return typeof ans === "string" && ans.toLowerCase() === (q.correctAnswer as string).toLowerCase();
+        return typeof ans === "string" && isFillAnswerCorrect(ans, q.correctAnswer as string);
       }
       return ans === q.correctAnswer;
     }).length;
@@ -91,7 +94,7 @@ export default function ResultsPage({ id }: { id: string }) {
       return Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a));
     }
     if (q.type === "fill") {
-      return typeof ans === "string" && ans.toLowerCase() === (q.correctAnswer as string).toLowerCase();
+      return typeof ans === "string" && isFillAnswerCorrect(ans, q.correctAnswer as string);
     }
     return ans === q.correctAnswer;
   }).length;
@@ -106,7 +109,7 @@ export default function ResultsPage({ id }: { id: string }) {
       return !(Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a)));
     }
     if (q.type === "fill") {
-      return typeof ans !== "string" || ans.toLowerCase() !== (q.correctAnswer as string).toLowerCase();
+      return typeof ans !== "string" || !isFillAnswerCorrect(ans, q.correctAnswer as string);
     }
     return ans !== q.correctAnswer;
   });
@@ -120,7 +123,7 @@ export default function ResultsPage({ id }: { id: string }) {
       const isCorrect = Array.isArray(q.correctAnswer)
         ? Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a))
         : q.type === "fill"
-          ? typeof ans === "string" && ans.toLowerCase() === (q.correctAnswer as string).toLowerCase()
+          ? typeof ans === "string" && isFillAnswerCorrect(ans, q.correctAnswer as string)
           : ans === q.correctAnswer;
       if (isCorrect) entry.correct++;
     }
@@ -133,7 +136,10 @@ export default function ResultsPage({ id }: { id: string }) {
     return `${m}m ${sec}s`;
   };
 
+  const canReview = canAccessFeature(getUserTier(session), "canAccessReview");
+
   const handleReview = (showAll = false) => {
+    if (!canReview) return;
     setQuizReview({
       answers,
       wrongQuestions: showAll ? questions : wrongQuestions,
@@ -198,6 +204,29 @@ export default function ResultsPage({ id }: { id: string }) {
           </div>
         </div>
 
+        {!session?.user && (
+          <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 mb-8">
+            <div className="flex items-start gap-3">
+              <Crown className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-foreground text-sm">
+                  Create a free account to save your progress
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Premium members get flashcards, simulation exams, custom question counts, instant feedback, and more.
+                </p>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-primary hover:underline"
+                >
+                  Sign up free
+                  <span aria-hidden>→</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-card border border-border rounded-xl p-6 shadow-card mb-8">
           <h2 className="font-display font-bold text-foreground mb-4">Topic Breakdown</h2>
           <div className="space-y-3">
@@ -227,18 +256,32 @@ export default function ResultsPage({ id }: { id: string }) {
           {wrongQuestions.length > 0 && (
             <button
               onClick={() => handleReview(false)}
-              className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              disabled={!canReview}
+              title={!canReview ? "Upgrade to Premium to review answers" : undefined}
+              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-opacity ${
+                canReview
+                  ? "bg-primary text-primary-foreground hover:opacity-90"
+                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
+              }`}
             >
               <Eye className="w-4 h-4" />
               Review Wrong Answers
+              {!canReview && <Crown className="w-4 h-4" />}
             </button>
           )}
           <button
             onClick={() => handleReview(true)}
-            className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 border border-primary text-primary py-3 rounded-xl font-semibold hover:bg-primary/10 transition-colors"
+            disabled={!canReview}
+            title={!canReview ? "Upgrade to Premium to review answers" : undefined}
+            className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-colors ${
+              canReview
+                ? "border border-primary text-primary hover:bg-primary/10"
+                : "border border-border text-muted-foreground cursor-not-allowed opacity-60"
+            }`}
           >
             <Eye className="w-4 h-4" />
             Review All Answers
+            {!canReview && <Crown className="w-4 h-4" />}
           </button>
           <button
             onClick={() =>

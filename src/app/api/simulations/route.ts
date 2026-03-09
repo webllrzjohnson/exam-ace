@@ -3,11 +3,18 @@ import {
   getSimulationQuestionsMixed,
   getSimulationQuestionsByCategory,
 } from "@/lib/queries/simulation";
+import { auth } from "@/lib/auth";
+import { isPremium } from "@/lib/access-control";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!isPremium(session)) {
+      return NextResponse.json({ error: "Premium subscription required" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
 

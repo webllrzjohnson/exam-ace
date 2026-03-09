@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Layers, ArrowRight, BookOpen } from "lucide-react";
+import { Layers, ArrowRight, BookOpen, Crown, Lock } from "lucide-react";
+import { getUserTier, canAccessFeature } from "@/lib/access-control";
+import { cn } from "@/lib/utils";
 
 type FlashcardSetMeta = {
   id: string;
@@ -20,7 +23,10 @@ type Props = {
 };
 
 export default function FlashcardsPage({ sets = [], totalCards = 0, nextUpSlug = null }: Props) {
+  const { data: session } = useSession();
   const setsWithCards = sets.filter((s) => s.cardCount > 0);
+  const tier = getUserTier(session);
+  const canAccess = canAccessFeature(tier, "canAccessFlashcards");
 
   return (
     <div>
@@ -35,6 +41,12 @@ export default function FlashcardsPage({ sets = [], totalCards = 0, nextUpSlug =
             <div className="inline-flex items-center gap-2 bg-primary-foreground/15 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium mb-6">
               <Layers className="w-4 h-4" />
               Flashcards
+              {!canAccess && (
+                <span className="flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded-full">
+                  <Crown className="w-3 h-3" />
+                  Premium
+                </span>
+              )}
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-extrabold mb-6 leading-tight text-gradient">
               Start Your Citizenship Test Preparation
@@ -48,13 +60,22 @@ export default function FlashcardsPage({ sets = [], totalCards = 0, nextUpSlug =
             <p className="text-sm opacity-80 mb-8">
               Based on the official Discover Canada study guide
             </p>
-            {nextUpSlug && (
+            {canAccess && nextUpSlug && (
               <Link
                 href={`/flashcards/${nextUpSlug}`}
                 className="inline-flex items-center gap-2 bg-primary-foreground text-primary px-6 py-3 rounded-lg font-semibold text-base hover:opacity-90 transition-opacity"
               >
                 Next Up: {sets.find((s) => s.id === nextUpSlug)?.name ?? "Flashcards"}
                 <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+            {!canAccess && (
+              <Link
+                href="/upgrade"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-lg font-semibold text-base hover:opacity-90 transition-opacity"
+              >
+                <Crown className="w-5 h-5" />
+                Upgrade to Access Flashcards
               </Link>
             )}
           </motion.div>
@@ -82,14 +103,20 @@ export default function FlashcardsPage({ sets = [], totalCards = 0, nextUpSlug =
               transition={{ delay: i * 0.05 }}
             >
               <Link
-                href={`/flashcards/${set.id}`}
-                className="flex items-start gap-4 p-5 rounded-xl border border-border bg-card shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5 group"
+                href={canAccess ? `/flashcards/${set.id}` : "/upgrade"}
+                className={cn(
+                  "flex items-start gap-4 p-5 rounded-xl border border-border bg-card shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5 group",
+                  !canAccess && "opacity-60"
+                )}
               >
                 <span className="text-3xl">{set.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
-                    {set.name}
-                  </h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-display font-bold text-foreground group-hover:text-primary transition-colors">
+                      {set.name}
+                    </h3>
+                    {!canAccess && <Lock className="w-3.5 h-3.5 text-amber-500" />}
+                  </div>
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                     {set.description}
                   </p>

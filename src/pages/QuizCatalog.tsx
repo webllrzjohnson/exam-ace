@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Search, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import QuizCard from "@/components/QuizCard";
 import { cn } from "@/lib/utils";
+import { getUserTier, getMaxQuestions } from "@/lib/access-control";
+import { DidYouKnow } from "@/components/quiz/did-you-know";
 
 type Quiz = {
   id: string;
@@ -27,6 +30,7 @@ type Category = { id: string; name: string; icon: string; description: string; q
 
 export default function QuizCatalog() {
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const initialCategory = searchParams.get("category") || "all";
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [search, setSearch] = useState("");
@@ -34,6 +38,10 @@ export default function QuizCatalog() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const tier = getUserTier(session);
+  const maxQuestions = getMaxQuestions(tier);
+  const isLocked = maxQuestions !== null && questionCount > maxQuestions;
 
   useEffect(() => {
     async function load() {
@@ -121,55 +129,78 @@ export default function QuizCatalog() {
         </div>
       </div>
 
-      <div className="space-y-6">
-        {filtered.some((q) => q.id === "advanced-citizenship") && (
-          <div>
-            <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-              Featured Challenge
-            </h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filtered
-                .filter((q) => q.id === "advanced-citizenship")
-                .map((quiz) => (
-                  <QuizCard key={quiz.id} quiz={quiz} variant="featured" />
-                ))}
+      <div className="grid lg:grid-cols-[1fr_350px] gap-8">
+        <div className="space-y-6">
+          {filtered.some((q) => q.id === "advanced-citizenship") && (
+            <div>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                Featured Challenge
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-5">
+                {filtered
+                  .filter((q) => q.id === "advanced-citizenship")
+                  .map((quiz) => (
+                    <QuizCard key={quiz.id} quiz={quiz} variant="featured" />
+                  ))}
+              </div>
             </div>
-          </div>
-        )}
-        <div>
+          )}
+          <div>
           {filtered.some((q) => q.id === "advanced-citizenship") && (
             <h2 className="font-display text-lg font-semibold text-foreground mb-3">All Quizzes</h2>
           )}
           <div className="mb-4">
-            <p className="text-sm font-medium text-muted-foreground mb-2">Number of questions</p>
+            <p className="text-sm font-medium text-muted-foreground mb-2">
+              Number of questions
+              {maxQuestions !== null && (
+                <span className="ml-2 text-xs text-muted-foreground">
+                  (Free tier limited to {maxQuestions})
+                </span>
+              )}
+            </p>
             <div className="flex flex-wrap gap-2">
-              {([5, 10, 15, 20, 25, 30, 50] as const).map((n) => (
-                <Button
-                  key={n}
-                  variant={questionCount === n ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setQuestionCount(n)}
-                  className="rounded-full"
-                >
-                  {n}
-                </Button>
-              ))}
+              {([5, 10, 15, 20, 25, 30, 50] as const).map((n) => {
+                const isDisabled = maxQuestions !== null && n > maxQuestions;
+                return (
+                  <Button
+                    key={n}
+                    variant={questionCount === n ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setQuestionCount(n)}
+                    disabled={isDisabled}
+                    className={cn("rounded-full", isDisabled && "opacity-50 cursor-not-allowed")}
+                  >
+                    {n}
+                    {isDisabled && <Lock className="w-3 h-3 ml-1" />}
+                  </Button>
+                );
+              })}
             </div>
+            {isLocked && (
+              <p className="text-xs text-amber-600 mt-2">
+                Upgrade to Premium to unlock custom question counts
+              </p>
+            )}
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 gap-5">
             {filtered
               .filter((q) => q.id !== "advanced-citizenship")
               .map((quiz) => (
                 <QuizCard key={quiz.id} quiz={quiz} questionCount={questionCount} />
               ))}
           </div>
+          {filtered.length === 0 && (
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-lg">No quizzes found. Try a different search or category.</p>
+            </div>
+          )}
         </div>
       </div>
-      {filtered.length === 0 && (
-        <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg">No quizzes found. Try a different search or category.</p>
-        </div>
-      )}
+
+      <aside className="lg:sticky lg:top-24 h-fit">
+        <DidYouKnow count={1} />
+      </aside>
+      </div>
     </div>
   );
 }

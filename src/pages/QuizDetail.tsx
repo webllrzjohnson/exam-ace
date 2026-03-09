@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, HelpCircle, Shuffle, TrendingUp, Target, BookOpen } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Clock, HelpCircle, Shuffle, TrendingUp, Target, BookOpen, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DifficultyBadge from "@/components/DifficultyBadge";
+import { getUserTier, getMaxQuestions } from "@/lib/access-control";
 
 type Quiz = {
   id: string;
@@ -26,6 +28,7 @@ const TIME_OPTIONS = [5, 10, 20, 30] as const;
 
 export default function QuizDetail({ id, countFromCatalog }: { id: string; countFromCatalog?: string }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"practice" | "timed">("practice");
@@ -34,6 +37,9 @@ export default function QuizDetail({ id, countFromCatalog }: { id: string; count
   const [timeMinutes, setTimeMinutes] = useState<number | null>(30);
 
   const isAdvanced = id === "advanced-citizenship";
+  const tier = getUserTier(session);
+  const maxQuestions = getMaxQuestions(tier);
+  const isGuest = tier === "guest";
 
   useEffect(() => {
     fetch(`/api/quizzes/${id}`)
@@ -112,19 +118,29 @@ export default function QuizDetail({ id, countFromCatalog }: { id: string; count
             <h2 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
               <HelpCircle className="w-5 h-5 text-primary" />
               Number of Questions
+              {maxQuestions !== null && (
+                <span className="text-xs font-normal text-muted-foreground">
+                  (Free tier limited to {maxQuestions})
+                </span>
+              )}
             </h2>
             <div className="flex flex-wrap gap-2">
-              {QUESTION_COUNTS.map((n) => (
-                <Button
-                  key={n}
-                  variant={questionCount === n ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setQuestionCount(n)}
-                  className="rounded-full"
-                >
-                  {n}
-                </Button>
-              ))}
+              {QUESTION_COUNTS.map((n) => {
+                const isDisabled = maxQuestions !== null && n > maxQuestions;
+                return (
+                  <Button
+                    key={n}
+                    variant={questionCount === n ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setQuestionCount(n)}
+                    disabled={isDisabled}
+                    className={cn("rounded-full", isDisabled && "opacity-50 cursor-not-allowed")}
+                  >
+                    {n}
+                    {isDisabled && <Lock className="w-3 h-3 ml-1" />}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
@@ -195,6 +211,11 @@ export default function QuizDetail({ id, countFromCatalog }: { id: string; count
       >
         Start Quiz →
       </button>
+      {isGuest && (
+        <p className="text-sm text-center text-muted-foreground mt-3">
+          Sign up for a free account to save your results and track progress
+        </p>
+      )}
     </div>
   );
 }

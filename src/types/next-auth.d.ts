@@ -4,6 +4,7 @@ declare module "next-auth" {
   interface User {
     role?: string;
     id?: string;
+    subscriptionTier?: string;
   }
 
   interface Session {
@@ -13,6 +14,7 @@ declare module "next-auth" {
       name?: string | null;
       image?: string | null;
       role?: string;
+      subscriptionTier?: string;
     };
   }
 }
@@ -21,5 +23,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     role?: string;
     id?: string;
+    subscriptionTier?: string;
   }
 }

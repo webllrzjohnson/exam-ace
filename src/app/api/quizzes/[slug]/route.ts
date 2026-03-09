@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getQuizBySlug } from "@/lib/queries/quiz";
+import { auth } from "@/lib/auth";
+import { getUserTier, getMaxQuestions } from "@/lib/access-control";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +16,18 @@ export async function GET(
     const timeParam = searchParams.get("time");
     const untimed = searchParams.get("untimed") === "true";
 
-    const countVal = countParam ? Math.min(50, Math.max(5, parseInt(countParam, 10) || 20)) : undefined;
+    const session = await auth();
+    const tier = getUserTier(session);
+    const maxQuestions = getMaxQuestions(tier);
+
+    let countVal = countParam ? Math.min(50, Math.max(5, parseInt(countParam, 10) || 20)) : undefined;
+
+    if (maxQuestions !== null && countVal) {
+      countVal = Math.min(countVal, maxQuestions);
+    } else if (maxQuestions !== null) {
+      countVal = maxQuestions;
+    }
+
     let options: { count?: number; timeLimit?: number } | undefined;
     if (slug === "advanced-citizenship" && countVal) {
       options = {
@@ -51,6 +64,7 @@ export async function GET(
         correctAnswer: q.correctAnswer,
         matchPairs: q.matchPairs as { left: string; right: string }[] | undefined,
         explanation: q.explanation,
+        hints: q.hints ?? [],
         topic: q.topic,
         difficulty: q.difficulty,
       })),

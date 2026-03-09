@@ -2,9 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, XCircle, Clock, ArrowRight, ChevronRight } from "lucide-react";
+import { CheckCircle, XCircle, Clock, ArrowRight, ChevronRight, RotateCcw } from "lucide-react";
+import { isFillAnswerCorrect } from "@/lib/utils";
 import { setQuizResult } from "@/lib/quiz-storage";
+import { getUserTier, canAccessFeature } from "@/lib/access-control";
+import { UpgradePrompt } from "@/components/paywall/upgrade-prompt";
+import { ProgressTracker } from "@/components/quiz/progress-tracker";
+import { StudyAssistant } from "@/components/quiz/study-assistant";
 
 type Question = {
   id: string;
@@ -13,6 +19,7 @@ type Question = {
   options?: string[];
   correctAnswer: string | string[];
   explanation: string;
+  hints?: string[];
   topic: string;
   difficulty: string;
 };
@@ -33,6 +40,7 @@ type QuizPlayerProps = {
 
 export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlayerProps) {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -43,6 +51,10 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [accessDenied, setAccessDenied] = useState<{ show: boolean; reason?: string; attemptsUsed?: number; attemptsLimit?: number }>({ show: false });
+
+  const tier = getUserTier(session);
+  const canSeeFeedback = canAccessFeature(tier, "canSeeFeedback");
 
   const params = new URLSearchParams();
   if (count) params.set("count", count);
@@ -54,8 +66,22 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
   const apiUrl = query ? `/api/quizzes/${id}?${query}` : `/api/quizzes/${id}`;
 
   useEffect(() => {
+    if (status === "loading") return;
+
     fetch(apiUrl)
-      .then((r) => (r.ok ? r.json() : null))
+      .then(async (r) => {
+        if (r.status === 403) {
+          const data = await r.json();
+          setAccessDenied({
+            show: true,
+            reason: "daily_limit",
+            attemptsUsed: data.attemptsUsed,
+            attemptsLimit: data.attemptsLimit,
+          });
+          return null;
+        }
+        return r.ok ? r.json() : null;
+      })
       .then((data) => {
         if (data) {
           setQuiz(data);
@@ -64,7 +90,7 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
         }
       })
       .finally(() => setLoading(false));
-  }, [apiUrl]);
+  }, [apiUrl, tier, status]);
 
   const questions = quiz?.questions ?? [];
   const total = questions.length;
@@ -103,6 +129,17 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
     return () => clearInterval(interval);
   }, [mode, quiz, handleFinish]);
 
+  if (accessDenied.show) {
+    return (
+      <UpgradePrompt
+        feature="quiz taking"
+        reason="daily_limit"
+        attemptsUsed={accessDenied.attemptsUsed}
+        attemptsLimit={accessDenied.attemptsLimit}
+      />
+    );
+  }
+
   if (loading || !quiz) {
     return <div className="container py-20 text-center text-muted-foreground">Loading...</div>;
   }
@@ -114,7 +151,7 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
 
   const currentIsCorrect = () => {
     if (question.type === "fill") {
-      return fillAnswer.trim().toLowerCase() === (question.correctAnswer as string).toLowerCase();
+      return isFillAnswerCorrect(fillAnswer, question.correctAnswer as string);
     }
     if (question.type === "multiple") {
       return (
@@ -135,7 +172,7 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
       setAnswers((prev) => ({ ...prev, [question.id]: selectedOptions[0] }));
     }
 
-    if (mode === "practice") {
+    if (mode === "practice" && canSeeFeedback) {
       setShowFeedback(true);
     } else {
       goNext();
@@ -168,15 +205,32 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
     <div className="min-h-[calc(100vh-4rem)] bg-background">
       <div className="sticky top-16 z-40 bg-card border-b border-border">
         <div className="container py-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
-            Question {currentIndex + 1} of {total}
-          </span>
-          {mode === "timed" && (
-            <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-              <Clock className="w-4 h-4 text-primary" />
-              {formatTime(timeLeft)}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            >
+              ← All Tests
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Restart
+            </button>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-muted-foreground">
+              Question {currentIndex + 1} / {total}
             </span>
-          )}
+            {mode === "timed" && (
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                <Clock className="w-4 h-4 text-primary" />
+                {formatTime(timeLeft)}
+              </span>
+            )}
+          </div>
         </div>
         <div className="h-1 bg-muted">
           <motion.div
@@ -188,15 +242,26 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
         </div>
       </div>
 
-      <div className="container max-w-2xl py-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={question.id}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.25 }}
-          >
+      <div className="container py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8">
+          <aside className="space-y-6">
+            <ProgressTracker
+              total={total}
+              currentIndex={currentIndex}
+              answers={answers}
+              questions={questions}
+            />
+          </aside>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={question.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25 }}
+              className="max-w-3xl"
+            >
             <span className="inline-block mb-4 px-3 py-1 bg-muted text-muted-foreground rounded-full text-xs font-semibold uppercase tracking-wide">
               {question.type === "single" && "Single Answer"}
               {question.type === "multiple" && "Multiple Answers"}
@@ -273,30 +338,58 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
               </div>
             )}
 
-            {showFeedback && (
+            {!showFeedback && (
+              <div className="mt-8">
+                <StudyAssistant
+                  hints={question.hints || []}
+                  explanation={question.explanation}
+                  showAfterAnswer={false}
+                  isAnswered={false}
+                />
+              </div>
+            )}
+
+            {showFeedback && canSeeFeedback && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mt-6 p-5 rounded-xl border ${currentIsCorrect() ? "bg-success/5 border-success/30" : "bg-destructive/5 border-destructive/30"
-                  }`}
+                className="mt-6 space-y-4"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  {currentIsCorrect() ? (
-                    <CheckCircle className="w-5 h-5 text-success" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-destructive" />
+                <div
+                  className={`p-5 rounded-xl border ${currentIsCorrect() ? "bg-success/5 border-success/30" : "bg-destructive/5 border-destructive/30"
+                    }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {currentIsCorrect() ? (
+                      <CheckCircle className="w-5 h-5 text-success" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-destructive" />
+                    )}
+                    <span className={`font-bold ${currentIsCorrect() ? "text-success" : "text-destructive"}`}>
+                      {currentIsCorrect() ? "Correct!" : "Incorrect"}
+                    </span>
+                  </div>
+                  {question.type === "fill" && !currentIsCorrect() && (
+                    <p className="text-sm text-foreground mb-2">
+                      Correct answer: <strong>{question.correctAnswer as string}</strong>
+                    </p>
                   )}
-                  <span className={`font-bold ${currentIsCorrect() ? "text-success" : "text-destructive"}`}>
-                    {currentIsCorrect() ? "Correct!" : "Incorrect"}
-                  </span>
                 </div>
-                {question.type === "fill" && !currentIsCorrect() && (
-                  <p className="text-sm text-foreground mb-2">
-                    Correct answer: <strong>{question.correctAnswer as string}</strong>
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground leading-relaxed">{question.explanation}</p>
+                <StudyAssistant
+                  hints={question.hints || []}
+                  explanation={question.explanation}
+                  showAfterAnswer={true}
+                  isAnswered={true}
+                />
               </motion.div>
+            )}
+
+            {mode === "practice" && !canSeeFeedback && (
+              <div className="mt-6 p-5 rounded-xl border border-border bg-muted/30">
+                <p className="text-sm text-muted-foreground">
+                  Upgrade to Premium to see instant feedback and explanations in practice mode.
+                </p>
+              </div>
             )}
 
             <div className="mt-8 flex justify-end">
@@ -319,8 +412,9 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
                 </button>
               )}
             </div>
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

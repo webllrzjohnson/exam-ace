@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { auth } from "@/lib/auth";
 import { saveQuizAttempt, type SaveQuizAttemptInput } from "@/lib/actions/quiz-attempt";
+import { canTakeQuiz, incrementDailyAttempts } from "@/lib/queries/daily-limit";
 
 const BodySchema = z.object({
   quizId: z.string().min(1),
@@ -14,6 +15,18 @@ const BodySchema = z.object({
 export async function POST(req: Request): Promise<Response> {
   const session = await auth();
   if (!session?.user?.id) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+  const accessCheck = await canTakeQuiz(session);
+  if (!accessCheck.allowed && accessCheck.reason === "daily_limit_exceeded") {
+    return Response.json(
+      {
+        error: "Daily limit exceeded",
+        attemptsUsed: accessCheck.attemptsUsed,
+        attemptsLimit: accessCheck.attemptsLimit,
+      },
+      { status: 403 }
+    );
+  }
 
   let json: unknown;
   try {
@@ -29,5 +42,8 @@ export async function POST(req: Request): Promise<Response> {
   if (!result.success) {
     return Response.json({ error: result.error ?? "Failed to save" }, { status: 500 });
   }
+
+  await incrementDailyAttempts(session.user.id);
+
   return Response.json({ data: { saved: true } }, { status: 201 });
 }

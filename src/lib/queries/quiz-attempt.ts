@@ -24,13 +24,15 @@ export async function getLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
 
   const userIds = attempts.map((a) => a.userId);
   const users = await db.user.findMany({
-    where: { id: { in: userIds } },
+    where: {
+      id: { in: userIds },
+    },
     select: { id: true, name: true, email: true },
   });
   const userMap = new Map(users.map((u) => [u.id, u]));
 
   const entries: LeaderboardEntry[] = attempts
-    .filter((a) => a._avg.score != null)
+    .filter((a) => a._avg.score != null && userMap.has(a.userId))
     .map((a) => ({
       userId: a.userId,
       name: userMap.get(a.userId)?.name ?? userMap.get(a.userId)?.email?.split("@")[0] ?? "Anonymous",

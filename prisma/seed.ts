@@ -14,9 +14,17 @@ async function main() {
         email: adminEmail,
         passwordHash: await hash(adminPassword, 12),
         role: "admin",
+        subscriptionTier: "premium",
       },
     });
     console.log(`Created admin user: ${adminEmail}`);
+  }
+
+  try {
+    await db.$executeRaw`UPDATE "User" SET "subscriptionTier" = 'free' WHERE "subscriptionTier" IS NULL OR "subscriptionTier" = ''`;
+    console.log("Updated existing users to free tier");
+  } catch (e) {
+    console.log("Note: User tier update skipped (may already be set)");
   }
 
   const categories = [
