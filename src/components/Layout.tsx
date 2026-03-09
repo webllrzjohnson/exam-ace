@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutGrid, ClipboardList, Trophy, User, Menu, X, Shield, Layers, LogIn, UserPlus, Crown, Lock } from "lucide-react";
+import { Home, LayoutGrid, ClipboardList, Trophy, User, Menu, X, Shield, Layers, LogIn, UserPlus, Lock } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
 import { getUserTier, canAccessFeature } from "@/lib/access-control";
 import { TierBadge } from "@/components/paywall/tier-badge";
+import { PremiumPromoBanner } from "@/components/paywall/premium-promo-banner";
+import { AccessibilityWidget } from "@/components/accessibility/accessibility-widget";
 
 async function handleSignOut() {
   await signOut({ redirect: false });
@@ -28,6 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const tier = getUserTier(session);
+  const isPremium = tier === "premium";
   const canAccessFlashcards = canAccessFeature(tier, "canAccessFlashcards");
   const canAccessSimulations = canAccessFeature(tier, "canAccessSimulations");
   const canAccessLeaderboard = canAccessFeature(tier, "canAccessLeaderboard");
@@ -37,7 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-16 items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="text-2xl">🍁</span>
             <span className="font-display font-bold text-lg text-foreground">
@@ -45,10 +48,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1 md:gap-4">
             <Link
               href="/"
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
                 pathname === "/" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
@@ -57,7 +60,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </Link>
             <Link
               href="/quizzes"
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
                 pathname === "/quizzes" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
@@ -67,7 +70,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {canAccessFlashcards ? (
               <Link
                 href="/flashcards"
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
                   pathname === "/flashcards" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
@@ -78,7 +81,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div className="relative group">
                 <Link
                   href="/upgrade"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-not-allowed"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground/50 hover:text-muted-foreground transition-all duration-200"
                 >
                   <Layers className="w-4 h-4" />
                   Flashcards
@@ -89,7 +92,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {canAccessSimulations ? (
               <Link
                 href="/simulation"
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
                   pathname === "/simulation" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
@@ -100,7 +103,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div className="relative group">
                 <Link
                   href="/upgrade"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-not-allowed"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground/50 hover:text-muted-foreground transition-all duration-200"
                 >
                   <ClipboardList className="w-4 h-4" />
                   Simulation
@@ -111,7 +114,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {isAuthenticated ? (
               <Link
                 href="/leaderboard"
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
                   pathname === "/leaderboard" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
@@ -122,7 +125,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div className="relative group">
                 <Link
                   href="/login?callbackUrl=/leaderboard"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground/50 hover:text-muted-foreground transition-all duration-200"
                 >
                   <Trophy className="w-4 h-4" />
                   Leaderboard
@@ -133,7 +136,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {canAccessDashboard && (
               <Link
                 href="/dashboard"
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
                   pathname === "/dashboard" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
@@ -144,7 +147,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {session?.user?.role === "admin" && (
               <Link
                 href="/admin"
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
                   pathname.startsWith("/admin") ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
@@ -154,21 +157,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             )}
             {session ? (
               <div className="flex items-center gap-2">
-                {tier !== "premium" && tier !== "guest" && (
-                  <Link
-                    href="/upgrade"
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity"
-                  >
-                    <Crown className="w-4 h-4" />
-                    Upgrade
-                  </Link>
-                )}
                 <div className="flex items-center gap-2 px-3 py-1.5">
                   <TierBadge tier={tier} size="sm" />
                 </div>
                 <button
                   onClick={() => handleSignOut()}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
                 >
                   Sign out
                 </button>
@@ -177,14 +171,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <>
                 <Link
                   href="/register"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
                 >
                   <UserPlus className="w-4 h-4" />
                   Register
                 </Link>
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
                 >
                   <LogIn className="w-4 h-4" />
                   Login
@@ -320,16 +314,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 )}
                 {session ? (
                   <>
-                    {tier !== "premium" && tier !== "guest" && (
-                      <Link
-                        href="/upgrade"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity"
-                      >
-                        <Crown className="w-4 h-4" />
-                        Upgrade to Premium
-                      </Link>
-                    )}
                     <button
                       onClick={() => {
                         handleSignOut();
@@ -366,18 +350,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </AnimatePresence>
       </header>
 
+      {!isPremium && <PremiumPromoBanner />}
+
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-border bg-card py-8">
-        <div className="container flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="container flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 text-sm text-muted-foreground">
           <p>© 2026 Canadian Citizenship Test Prep. Practice smarter, pass with confidence. 🍁</p>
-          {tier !== "premium" && (
-            <Link href="/pricing" className="hover:text-foreground transition-colors">
-              Compare Plans
-            </Link>
-          )}
         </div>
       </footer>
+      <AccessibilityWidget />
     </div>
   );
 }

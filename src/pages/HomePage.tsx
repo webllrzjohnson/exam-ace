@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { useSession } from "next-auth/react";
 import { ArrowRight, BookOpen, CheckCircle, Clock, Star, Users, Crown } from "lucide-react";
 import { motion } from "framer-motion";
-import QuizCard from "@/components/QuizCard";
 import { getUserTier } from "@/lib/access-control";
 
 const stats = [
@@ -15,9 +15,9 @@ const stats = [
 ];
 
 type Category = { id: string; name: string; icon: string; description: string; quizCount: number; color: string };
-type Quiz = { id: string; title: string; description: string; category: string; categoryIcon: string; difficulty: string; questionCount: number; timeLimit: number; passRate: number; avgScore: number; topics: string[]; featured: boolean };
 
-export default function HomePage({ categories = [], featured = [] }: { categories?: Category[]; featured?: Quiz[] }) {
+export default function HomePage({ categories = [] }: { categories?: Category[] }) {
+  const { t } = useTranslation();
   const { data: session } = useSession();
   const tier = getUserTier(session);
   const showComparePlans = tier !== "premium";
@@ -44,24 +44,24 @@ export default function HomePage({ categories = [], featured = [] }: { categorie
             <div className="flex flex-wrap gap-4">
               <Link
                 href="/quizzes"
-                className="inline-flex items-center gap-2 bg-primary-foreground text-primary px-6 py-3 rounded-lg font-semibold text-base hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 bg-primary-foreground text-primary px-6 py-3 rounded-lg font-semibold text-base hover:opacity-90 hover:scale-[1.02] transition-all duration-200"
               >
                 Start Practicing
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/quizzes"
-                className="inline-flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-6 py-3 rounded-lg font-semibold text-base hover:bg-primary-foreground/10 transition-colors"
+                className="inline-flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-6 py-3 rounded-lg font-semibold text-base hover:bg-primary-foreground/10 hover:scale-[1.02] transition-all duration-200"
               >
                 Browse All Quizzes
               </Link>
               {showComparePlans && (
                 <Link
-                  href="/pricing"
+                  href="/upgrade"
                   className="inline-flex items-center gap-2 border-2 border-amber-400/80 text-amber-200 px-6 py-3 rounded-lg font-semibold text-base hover:bg-amber-400/20 transition-colors"
                 >
                   <Crown className="w-4 h-4" />
-                  Compare Plans
+                  Upgrade
                 </Link>
               )}
             </div>
@@ -114,23 +114,6 @@ export default function HomePage({ categories = [], featured = [] }: { categorie
         </div>
       </section>
 
-      <section className="container pb-16">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="font-display text-3xl font-bold text-foreground mb-2">Featured Quizzes</h2>
-            <p className="text-muted-foreground">Most popular quizzes to get you started</p>
-          </div>
-          <Link href="/quizzes" className="text-primary font-medium text-sm hover:underline hidden sm:block">
-            View all →
-          </Link>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {featured.map((quiz) => (
-            <QuizCard key={quiz.id} quiz={quiz} />
-          ))}
-        </div>
-      </section>
-
       <section className="container pb-20">
         <div className="gradient-hero rounded-2xl p-10 md:p-14 text-center text-primary-foreground">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4 text-gradient">Ready to Become a Canadian Citizen?</h2>
@@ -138,18 +121,18 @@ export default function HomePage({ categories = [], featured = [] }: { categorie
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/quizzes"
-              className="inline-flex items-center gap-2 bg-primary-foreground text-primary px-8 py-3.5 rounded-lg font-bold text-base hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 bg-primary-foreground text-primary px-8 py-3.5 rounded-lg font-bold text-base hover:opacity-90 hover:scale-[1.02] transition-all duration-200"
             >
               Start Practicing Now
               <ArrowRight className="w-5 h-5" />
             </Link>
             {showComparePlans && (
               <Link
-                href="/pricing"
+                href="/upgrade"
                 className="inline-flex items-center gap-2 border-2 border-primary-foreground/50 text-primary-foreground px-8 py-3.5 rounded-lg font-bold text-base hover:bg-primary-foreground/10 transition-colors"
               >
                 <Crown className="w-5 h-5" />
-                Compare Plans & Upgrade
+                {t("home.upgrade")}
               </Link>
             )}
           </div>

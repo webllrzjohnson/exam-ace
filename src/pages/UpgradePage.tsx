@@ -22,21 +22,22 @@ export default function UpgradePage() {
             href="/pricing"
             className="text-sm text-primary hover:underline font-medium"
           >
-            Compare Guest, Free & Premium plans →
+            Compare Free, Registered & Premium plans →
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <div className="bg-card border border-border rounded-2xl p-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-16">
+          <div className="bg-card border border-border rounded-2xl p-6">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-foreground mb-2">Free</h3>
+              <h3 className="text-xl font-bold text-foreground mb-2">Free</h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-foreground">$0</span>
-                <span className="text-muted-foreground">/month</span>
+                <span className="text-3xl font-bold text-foreground">$0</span>
+                <span className="text-muted-foreground text-sm">/month</span>
               </div>
+              <p className="text-xs text-muted-foreground mt-1">Try before signing up</p>
             </div>
 
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-2.5 mb-8">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
                 <span className="text-sm text-foreground">Unlimited quiz attempts</span>
@@ -47,19 +48,76 @@ export default function UpgradePage() {
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground">See results & track progress</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground">Leaderboard access</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground">Review mode with explanations</span>
+                <span className="text-sm text-foreground">See results</span>
               </li>
               <li className="flex items-start gap-3 opacity-40">
                 <span className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground">✕</span>
-                <span className="text-sm text-muted-foreground">Custom question count</span>
+                <span className="text-sm text-muted-foreground">Dashboard</span>
+              </li>
+              <li className="flex items-start gap-3 opacity-40">
+                <span className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground">✕</span>
+                <span className="text-sm text-muted-foreground">Leaderboard</span>
+              </li>
+              <li className="flex items-start gap-3 opacity-40">
+                <span className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground">✕</span>
+                <span className="text-sm text-muted-foreground">Review mode</span>
+              </li>
+              <li className="flex items-start gap-3 opacity-40">
+                <span className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground">✕</span>
+                <span className="text-sm text-muted-foreground">Flashcards</span>
+              </li>
+              <li className="flex items-start gap-3 opacity-40">
+                <span className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground">✕</span>
+                <span className="text-sm text-muted-foreground">Simulation exams</span>
+              </li>
+              <li className="flex items-start gap-3 opacity-40">
+                <span className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground">✕</span>
+                <span className="text-sm text-muted-foreground">Instant feedback</span>
+              </li>
+            </ul>
+
+            <Link
+              href="/quizzes"
+              className="block w-full text-center px-6 py-3 rounded-xl font-semibold border border-border hover:bg-muted transition-colors text-sm"
+            >
+              Try as Guest
+            </Link>
+          </div>
+
+          <div className="bg-card border-2 border-primary/30 rounded-2xl p-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-foreground mb-2">Registered</h3>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-foreground">$0</span>
+                <span className="text-muted-foreground text-sm">/month</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Create a free account</p>
+            </div>
+
+            <ul className="space-y-2.5 mb-8">
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
+                <span className="text-sm text-foreground">Unlimited quiz attempts</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
+                <span className="text-sm text-foreground">10 questions per quiz</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
+                <span className="text-sm text-foreground">See results</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
+                <span className="text-sm text-foreground font-medium">Dashboard access</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-success mt-0.5 shrink-0" />
+                <span className="text-sm text-foreground font-medium">Leaderboard access</span>
+              </li>
+              <li className="flex items-start gap-3 opacity-40">
+                <span className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground">✕</span>
+                <span className="text-sm text-muted-foreground">Review mode</span>
               </li>
               <li className="flex items-start gap-3 opacity-40">
                 <span className="w-5 h-5 mt-0.5 shrink-0 text-muted-foreground">✕</span>
@@ -77,40 +135,41 @@ export default function UpgradePage() {
 
             <Link
               href="/register"
-              className="block w-full text-center px-6 py-3 rounded-xl font-semibold border border-border hover:bg-muted transition-colors"
+              className="block w-full text-center px-6 py-3 rounded-xl font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm"
             >
-              Get Started Free
+              Sign Up Free
             </Link>
           </div>
 
-          <div className="bg-gradient-to-br from-amber-500/5 to-orange-500/5 border-2 border-amber-500/30 rounded-2xl p-8 relative">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full">
-              MOST POPULAR
+          <div className="bg-gradient-to-br from-amber-500/5 to-orange-500/5 border-2 border-amber-500/30 rounded-2xl p-6 relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full">
+              ALL FEATURES
             </div>
 
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
-                <Crown className="w-6 h-6 text-amber-500" />
+              <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-500" />
                 Premium
               </h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-foreground">$9.99</span>
-                <span className="text-muted-foreground">/month</span>
+                <span className="text-3xl font-bold text-foreground">$9.99</span>
+                <span className="text-muted-foreground text-sm">/month</span>
               </div>
+              <p className="text-xs text-muted-foreground mt-1">Paying user — full access</p>
             </div>
 
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-2.5 mb-8">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground font-medium">Unlimited quiz attempts</span>
+                <span className="text-sm text-foreground font-medium">Everything in Registered</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground font-medium">Custom question count (5-50)</span>
+                <span className="text-sm text-foreground font-medium">Custom question count (5–50)</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground font-medium">Full flashcard access</span>
+                <span className="text-sm text-foreground font-medium">Flashcards</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
@@ -118,15 +177,11 @@ export default function UpgradePage() {
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground font-medium">Leaderboard rankings</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
                 <span className="text-sm text-foreground font-medium">Review mode with explanations</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground font-medium">Instant feedback in practice mode</span>
+                <span className="text-sm text-foreground font-medium">Instant feedback in practice</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
@@ -136,7 +191,7 @@ export default function UpgradePage() {
 
             <button
               disabled
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               Coming Soon
             </button>

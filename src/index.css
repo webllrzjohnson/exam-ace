@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
+@import "./components/accessibility/accessibility-styles.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -116,6 +118,7 @@
 
   h1, h2, h3, h4 {
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-weight: 600;
   }
 }
 

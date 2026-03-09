@@ -19,66 +19,16 @@ import {
 } from "lucide-react";
 
 const TIER_FEATURES = [
-  {
-    label: "Take practice quizzes",
-    guest: true,
-    free: true,
-    premium: true,
-  },
-  {
-    label: "See quiz results",
-    guest: true,
-    free: true,
-    premium: true,
-  },
-  {
-    label: "Questions per quiz",
-    guest: "10",
-    free: "10",
-    premium: "5–50 (custom)",
-  },
-  {
-    label: "Review mode with explanations",
-    guest: false,
-    free: false,
-    premium: true,
-  },
-  {
-    label: "Access dashboard",
-    guest: false,
-    free: true,
-    premium: true,
-  },
-  {
-    label: "Flashcards",
-    guest: false,
-    free: false,
-    premium: true,
-  },
-  {
-    label: "Simulation exams",
-    guest: false,
-    free: false,
-    premium: true,
-  },
-  {
-    label: "Leaderboard access",
-    guest: false,
-    free: true,
-    premium: true,
-  },
-  {
-    label: "Appear on leaderboard",
-    guest: false,
-    free: true,
-    premium: true,
-  },
-  {
-    label: "Instant feedback in practice",
-    guest: false,
-    free: false,
-    premium: true,
-  },
+  { label: "Take practice quizzes", free: true, registered: true, premium: true },
+  { label: "See quiz results", free: true, registered: true, premium: true },
+  { label: "Questions per quiz", free: "10", registered: "10", premium: "5–50 (custom)" },
+  { label: "Access dashboard", free: false, registered: true, premium: true },
+  { label: "Leaderboard access", free: false, registered: true, premium: true },
+  { label: "Appear on leaderboard", free: false, registered: true, premium: true },
+  { label: "Review mode with explanations", free: false, registered: false, premium: true },
+  { label: "Flashcards", free: false, registered: false, premium: true },
+  { label: "Simulation exams", free: false, registered: false, premium: true },
+  { label: "Instant feedback in practice", free: false, registered: false, premium: true },
 ] as const;
 
 function FeatureCell({
@@ -103,7 +53,7 @@ export default function PricingPage() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-semibold text-sm mb-4">
             <Sparkles className="w-4 h-4" />
-            Compare Plans
+            Upgrade
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
             Choose the Right Plan for Your Journey
@@ -123,15 +73,15 @@ export default function PricingPage() {
                 <th className="text-center py-4 px-4">
                   <div className="flex flex-col items-center gap-1">
                     <User className="w-6 h-6 text-muted-foreground" />
-                    <span className="font-semibold text-foreground">Guest</span>
+                    <span className="font-semibold text-foreground">Free</span>
                     <span className="text-xs text-muted-foreground">Try before signing up</span>
                   </div>
                 </th>
                 <th className="text-center py-4 px-4">
                   <div className="flex flex-col items-center gap-1">
                     <UserPlus className="w-6 h-6 text-muted-foreground" />
-                    <span className="font-semibold text-foreground">Free</span>
-                    <span className="text-xs text-muted-foreground">Create an account</span>
+                    <span className="font-semibold text-foreground">Registered</span>
+                    <span className="text-xs text-muted-foreground">Create a free account</span>
                   </div>
                 </th>
                 <th className="text-center py-4 px-4 bg-gradient-to-b from-amber-500/5 to-transparent rounded-t-xl">
@@ -152,12 +102,12 @@ export default function PricingPage() {
                   <td className="py-3 px-4 text-sm text-foreground">{row.label}</td>
                   <td className="py-3 px-4 text-center">
                     <span className="inline-flex justify-center">
-                      <FeatureCell value={row.guest} />
+                      <FeatureCell value={row.free} />
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center">
                     <span className="inline-flex justify-center">
-                      <FeatureCell value={row.free} />
+                      <FeatureCell value={row.registered} />
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center bg-amber-500/5">

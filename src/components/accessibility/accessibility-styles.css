@@ -1,0 +1,22 @@
+/* High contrast mode - increases contrast for text and borders */
+.accessibility-high-contrast {
+  --foreground: 215 30% 5%;
+  --muted-foreground: 215 20% 25%;
+  --border: 215 30% 70%;
+}
+
+.accessibility-high-contrast.dark {
+  --foreground: 210 20% 98%;
+  --muted-foreground: 210 15% 80%;
+  --border: 215 20% 40%;
+}
+
+/* Underline all links */
+.accessibility-underline-links a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.accessibility-underline-links a:hover {
+  text-decoration-thickness: 2px;
+}
