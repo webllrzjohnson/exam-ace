@@ -22,7 +22,7 @@ Create `.env` on the server:
 
 ```
 DATABASE_URL="postgresql://examlbl_user:YOUR_PASSWORD@localhost:5432/cad_exam"
-NEXTAUTH_URL="https://yourdomain.com"
+NEXTAUTH_URL="https://citizen.maplehub.cloud"
 NEXTAUTH_SECRET="generate-a-secure-32-char-string"
 ADMIN_EMAIL="admin@example.com"
 ADMIN_PASSWORD="your-secure-admin-password"
@@ -50,7 +50,7 @@ pm2 startup
 
 ## 5. Nginx
 
-Copy `nginx-example.conf` to `/etc/nginx/sites-available/examlbl`, edit `yourdomain.com`, then:
+Copy `nginx-example.conf` to `/etc/nginx/sites-available/examlbl`, edit `citizen.maplehub.cloud`, then:
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/examlbl /etc/nginx/sites-enabled/
@@ -62,11 +62,11 @@ sudo systemctl reload nginx
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d yourdomain.com
+sudo certbot --nginx -d citizen.maplehub.cloud
 ```
 
 ## Admin Login
 
-- URL: `https://yourdomain.com/login`
+- URL: `https://citizen.maplehub.cloud/login`
 - Default (after seed): `admin@example.com` / `admin123` (change via ADMIN_EMAIL/ADMIN_PASSWORD in seed)
 - After first login, go to `/admin` to manage questions
