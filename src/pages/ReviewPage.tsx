@@ -5,15 +5,19 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { CheckCircle, XCircle, ArrowLeft, Crown } from "lucide-react";
+import { CheckCircle, XCircle, ArrowLeft, ArrowRight, Crown } from "lucide-react";
 import { getQuizReview, clearQuizReview } from "@/lib/quiz-storage";
+import { Button } from "@/components/ui/button";
+
+type MatchPair = { left: string; right: string };
 
 type Question = {
   id: string;
   type: string;
   question: string;
   options?: string[];
-  correctAnswer: string | string[];
+  correctAnswer: string | string[] | MatchPair[];
+  matchPairs?: MatchPair[];
   explanation: string;
   topic: string;
 };
@@ -22,7 +26,7 @@ export default function ReviewPage({ id }: { id: string }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [quiz, setQuiz] = useState<{ id: string } | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[] | MatchPair[]>>({});
   const [wrongQuestions, setWrongQuestions] = useState<Question[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -123,14 +127,42 @@ export default function ReviewPage({ id }: { id: string }) {
               </div>
               <h3 className="font-bold text-foreground mb-4">{q.question}</h3>
 
-              {q.options ? (
+              {q.type === "matching" && (q.matchPairs ?? (q.correctAnswer as MatchPair[])) ? (
+                <div className="space-y-2 mb-4">
+                  {(q.matchPairs ?? (q.correctAnswer as MatchPair[])).map((pair: MatchPair, j: number) => {
+                    const userPairs = Array.isArray(userAnswer) ? (userAnswer as MatchPair[]) : [];
+                    const userRight = userPairs.find((p) => p.left === pair.left)?.right ?? "";
+                    const isCorrect = userRight === pair.right;
+                    return (
+                      <div
+                        key={j}
+                        className={`flex flex-wrap items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium ${
+                          isCorrect ? "border-success bg-success/10" : "border-destructive bg-destructive/10"
+                        }`}
+                      >
+                        <span className="text-foreground">{pair.left}</span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className={isCorrect ? "text-success" : "text-destructive"}>
+                          {userRight || "(no answer)"}
+                        </span>
+                        {!isCorrect && (
+                          <>
+                            <span className="text-muted-foreground">· Correct:</span>
+                            <span className="text-success">{pair.right}</span>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : q.options ? (
                 <div className="space-y-2 mb-4">
                   {q.options.map((opt, j) => {
                     const isCorrectOpt = Array.isArray(q.correctAnswer)
-                      ? q.correctAnswer.includes(opt)
+                      ? (q.correctAnswer as string[]).includes(opt)
                       : q.correctAnswer === opt;
                     const isUserAnswer = Array.isArray(userAnswer)
-                      ? userAnswer.includes(opt)
+                      ? (userAnswer as string[]).includes(opt)
                       : userAnswer === opt;
 
                     return (
@@ -163,10 +195,10 @@ export default function ReviewPage({ id }: { id: string }) {
               ) : (
                 <div className="mb-4 space-y-1">
                   <p className="text-sm">
-                    <span className="text-destructive font-medium">Your answer:</span> {userAnswer || "(no answer)"}
+                    <span className="text-destructive font-medium">Your answer:</span> {String(userAnswer || "(no answer)")}
                   </p>
                   <p className="text-sm">
-                    <span className="text-success font-medium">Correct answer:</span> {q.correctAnswer as string}
+                    <span className="text-success font-medium">Correct answer:</span> {String(q.correctAnswer)}
                   </p>
                 </div>
               )}
@@ -180,15 +212,17 @@ export default function ReviewPage({ id }: { id: string }) {
       </div>
 
       <div className="mt-10 text-center">
-        <button
+        <Button
+          variant="action"
           onClick={() => {
             clearQuizReview();
             router.push(retryHref);
           }}
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+          className="gap-2"
         >
           {isSimulation ? "Retry Simulation" : "Retry This Quiz"}
-        </button>
+          <ArrowRight className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );

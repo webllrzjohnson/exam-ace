@@ -8,7 +8,7 @@ const CreateQuestionSchema = z.object({
   type: z.enum(["single", "multiple", "boolean", "fill", "matching"]),
   question: z.string().min(1),
   options: z.array(z.string()).optional(),
-  correctAnswer: z.union([z.string(), z.array(z.string())]),
+  correctAnswer: z.union([z.string(), z.array(z.string()), z.array(z.object({ left: z.string(), right: z.string() }))]).optional(),
   matchPairs: z.array(z.object({ left: z.string(), right: z.string() })).optional(),
   explanation: z.string().min(1),
   topic: z.string().min(1),
@@ -26,14 +26,16 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten() }, { status: 400 });
     }
+    const isMatching = parsed.data.type === "matching";
+    const matchPairs = parsed.data.matchPairs ?? (isMatching ? (parsed.data.correctAnswer as { left: string; right: string }[]) : undefined);
     const question = await db.question.create({
       data: {
         quizId: parsed.data.quizId,
         type: parsed.data.type,
         question: parsed.data.question,
-        options: parsed.data.options ?? undefined,
-        correctAnswer: parsed.data.correctAnswer as object,
-        matchPairs: parsed.data.matchPairs as object | undefined,
+        options: isMatching ? null : (parsed.data.options ?? undefined),
+        correctAnswer: (isMatching ? matchPairs : parsed.data.correctAnswer) as object,
+        matchPairs: matchPairs as object | undefined,
         explanation: parsed.data.explanation,
         topic: parsed.data.topic,
         difficulty: parsed.data.difficulty,

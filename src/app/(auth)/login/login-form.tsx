@@ -7,6 +7,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -85,8 +86,14 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button
+          type="submit"
+          variant="action"
+          className="w-full gap-2"
+          disabled={form.formState.isSubmitting}
+        >
           {form.formState.isSubmitting ? "Signing in..." : "Sign in"}
+          {!form.formState.isSubmitting && <ArrowRight className="w-4 h-4" />}
         </Button>
         <div className="space-y-2 text-center text-sm">
           <p className="text-muted-foreground">

@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function deduplicateByContent<T extends { id: string; question: string }>(
+  questions: T[]
+): T[] {
+  const seen = new Set<string>();
+  return questions.filter((q) => {
+    const key = q.question.trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function shuffleArray<T>(arr: T[]): T[] {
   const out = [...arr];
   for (let i = out.length - 1; i > 0; i--) {
@@ -18,6 +30,15 @@ export function shuffleArray<T>(arr: T[]): T[] {
  * Checks if a fill-in-the-blank answer is correct. Accepts the core answer when
  * the stored correct answer includes parenthetical clarifications (e.g. "Sovereign's (King's / Queen's)").
  */
+export function isMatchingAnswerCorrect(
+  userAnswer: { left: string; right: string }[],
+  correctAnswer: { left: string; right: string }[]
+): boolean {
+  if (userAnswer.length !== correctAnswer.length) return false;
+  const correctSet = new Set(correctAnswer.map((p) => `${p.left}|${p.right}`));
+  return userAnswer.every((p) => correctSet.has(`${p.left}|${p.right}`));
+}
+
 export function isFillAnswerCorrect(userAnswer: string, correctAnswer: string): boolean {
   const normalized = (s: string) => s.trim().toLowerCase();
   const user = normalized(userAnswer);

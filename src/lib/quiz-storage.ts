@@ -1,12 +1,15 @@
 const QUIZ_RESULT_KEY = "quiz_result";
 const QUIZ_REVIEW_KEY = "quiz_review";
 
+export type MatchPair = { left: string; right: string };
+
 export type QuizResultQuestion = {
   id: string;
   type: string;
   question: string;
   options?: string[];
-  correctAnswer: string | string[];
+  correctAnswer: string | string[] | MatchPair[];
+  matchPairs?: MatchPair[];
   explanation: string;
   topic: string;
   difficulty: string;
@@ -14,20 +17,21 @@ export type QuizResultQuestion = {
 
 export type QuizResult = {
   quizId: string;
-  answers: Record<string, string | string[]>;
+  answers: Record<string, string | string[] | MatchPair[]>;
   timeTaken: number;
   mode: string;
   questions?: QuizResultQuestion[];
 };
 
 export type QuizReview = {
-  answers: Record<string, string | string[]>;
+  answers: Record<string, string | string[] | MatchPair[]>;
   wrongQuestions: Array<{
     id: string;
     type: string;
     question: string;
     options?: string[];
-    correctAnswer: string | string[];
+    correctAnswer: string | string[] | MatchPair[];
+    matchPairs?: MatchPair[];
     explanation: string;
     topic: string;
     difficulty: string;

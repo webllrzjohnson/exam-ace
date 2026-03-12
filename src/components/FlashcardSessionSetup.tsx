@@ -7,7 +7,7 @@ import { getFlashcardsForSession } from "@/lib/actions/flashcard";
 import FlashcardPlayer from "@/components/FlashcardPlayer";
 import { PRESET_COUNTS, MAX_CUSTOM_COUNT } from "@/lib/queries/flashcard";
 import type { Flashcard } from "@/lib/queries/flashcard";
-import { RotateCcw } from "lucide-react";
+import { ArrowRight, RotateCcw } from "lucide-react";
 
 const STORAGE_KEY_PREFIX = "flashcards-last-seen-";
 
@@ -159,11 +159,13 @@ export default function FlashcardSessionSetup({ category, displayName, available
       )}
 
       <Button
+        variant="action"
         onClick={startSession}
         disabled={isLoading || effectiveCount < 1}
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto gap-2"
       >
         {isLoading ? "Loading…" : `Start with ${effectiveCount} cards`}
+        {!isLoading && <ArrowRight className="w-4 h-4" />}
       </Button>
     </div>
   );

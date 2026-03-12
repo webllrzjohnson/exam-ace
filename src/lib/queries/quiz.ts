@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { deduplicateByContent } from "@/lib/utils";
 
 const DIFFICULTY_ORDER = { Hard: 0, Medium: 1, Easy: 2 } as const;
 
@@ -11,7 +12,8 @@ export async function getAdvancedCitizenshipQuestions(count: number) {
     },
     include: { quiz: true },
   });
-  const byDifficulty = [...allQuestions].sort(
+  const deduped = deduplicateByContent(allQuestions);
+  const byDifficulty = [...deduped].sort(
     (a, b) => (DIFFICULTY_ORDER[b.difficulty as keyof typeof DIFFICULTY_ORDER] ?? 2) - (DIFFICULTY_ORDER[a.difficulty as keyof typeof DIFFICULTY_ORDER] ?? 2)
   );
   for (let i = byDifficulty.length - 1; i > 0; i--) {
@@ -46,7 +48,8 @@ export async function getQuizBySlug(slug: string, options?: { count?: number; ti
   });
 
   if (quiz) {
-    const shuffled = [...quiz.questions];
+    const deduped = deduplicateByContent(quiz.questions);
+    const shuffled = [...deduped];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];

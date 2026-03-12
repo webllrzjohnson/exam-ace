@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, ChevronLeft, RotateCcw } from "lucide-react";
+import { Clock, ChevronLeft, RotateCcw, ArrowRight } from "lucide-react";
 import { setQuizResult } from "@/lib/quiz-storage";
+import { shuffleArray } from "@/lib/utils";
+import { ProgressTracker } from "@/components/quiz/progress-tracker";
+import { Button } from "@/components/ui/button";
+
+type MatchPair = { left: string; right: string };
 
 type Question = {
   id: string;
@@ -13,6 +18,7 @@ type Question = {
   question: string;
   options?: string[];
   correctAnswer: string | string[];
+  matchPairs?: MatchPair[];
   explanation: string;
   topic: string;
   difficulty: string;
@@ -34,9 +40,10 @@ export default function SimulationPlayer({
   const [simulation, setSimulation] = useState<Simulation | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[] | MatchPair[]>>({});
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [fillAnswer, setFillAnswer] = useState("");
+  const [matchingSelections, setMatchingSelections] = useState<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [finished, setFinished] = useState(false);
@@ -72,6 +79,11 @@ export default function SimulationPlayer({
         finalAnswers[question.id] = fillAnswer.trim();
       } else if (question.type === "multiple") {
         finalAnswers[question.id] = selectedOptions;
+      } else if (question.type === "matching" && question.matchPairs) {
+        finalAnswers[question.id] = question.matchPairs.map((p, i) => ({
+          left: p.left,
+          right: matchingSelections[i] ?? "",
+        }));
       } else if (selectedOptions.length > 0) {
         finalAnswers[question.id] = selectedOptions[0];
       }
@@ -116,6 +128,7 @@ export default function SimulationPlayer({
     setAnswers({});
     setSelectedOptions([]);
     setFillAnswer("");
+    setMatchingSelections({});
     setTimeLeft(simulation!.timeLimit * 60);
     setStartTime(Date.now());
     setFinished(false);
@@ -126,6 +139,11 @@ export default function SimulationPlayer({
       setAnswers((prev) => ({ ...prev, [question.id]: fillAnswer.trim() }));
     } else if (question.type === "multiple") {
       setAnswers((prev) => ({ ...prev, [question.id]: selectedOptions }));
+    } else if (question.type === "matching" && question.matchPairs) {
+      setAnswers((prev) => ({
+        ...prev,
+        [question.id]: question.matchPairs.map((p, i) => ({ left: p.left, right: matchingSelections[i] ?? "" })),
+      }));
     } else {
       setAnswers((prev) => ({ ...prev, [question.id]: selectedOptions[0] }));
     }
@@ -135,6 +153,7 @@ export default function SimulationPlayer({
   const goNext = () => {
     setSelectedOptions([]);
     setFillAnswer("");
+    setMatchingSelections({});
     if (currentIndex + 1 >= total) {
       handleFinish();
     } else {
@@ -159,7 +178,14 @@ export default function SimulationPlayer({
   const canSubmit =
     question?.type === "fill"
       ? fillAnswer.trim().length > 0
-      : selectedOptions.length > 0;
+      : question?.type === "matching" && question?.matchPairs
+        ? question.matchPairs.every((_, i) => !!matchingSelections[i])
+        : selectedOptions.length > 0;
+
+  const matchingRightOptions = useMemo(() => {
+    if (question?.type !== "matching" || !question?.matchPairs) return [];
+    return shuffleArray(question.matchPairs.map((p) => p.right));
+  }, [question?.id, question?.type, question?.matchPairs]);
   const formatTime = (s: number) =>
     `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 
@@ -179,94 +205,26 @@ export default function SimulationPlayer({
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col lg:flex-row">
-      <aside className="lg:hidden border-b border-border bg-card/50 p-4">
-        <div className="flex items-center justify-between gap-4">
-          <Link
-            href="/simulation"
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            All Tests
-          </Link>
-          <button
-            onClick={handleRestart}
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Restart
-          </button>
-        </div>
-        <div className="flex gap-1.5 mt-3 overflow-x-auto pb-1">
-          {Array.from({ length: total }, (_, i) => {
-            const answered = !!answers[questions[i]?.id];
-            const isCurrent = i === currentIndex;
-            return (
-              <button
-                key={i}
-                onClick={() => goToQuestion(i)}
-                className={`min-w-[2rem] h-8 rounded text-xs font-medium shrink-0 ${
-                  isCurrent
-                    ? "bg-primary text-primary-foreground"
-                    : answered
-                      ? "bg-muted text-muted-foreground"
-                      : "bg-muted/50 text-muted-foreground"
-                }`}
-              >
-                {i + 1}
-              </button>
-            );
-          })}
-        </div>
-      </aside>
-      <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-card/50">
-        <div className="p-4 space-y-2">
-          <Link
-            href="/simulation"
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            All Simulation Tests
-          </Link>
-          <button
-            onClick={handleRestart}
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Restart
-          </button>
-        </div>
-        <div className="flex-1 p-4 overflow-auto">
-          <h3 className="text-sm font-semibold text-foreground mb-3">
-            Your Progress
-          </h3>
-          <div className="grid grid-cols-5 gap-2">
-            {Array.from({ length: total }, (_, i) => {
-              const answered = !!answers[questions[i]?.id];
-              const isCurrent = i === currentIndex;
-              return (
-                <button
-                  key={i}
-                  onClick={() => goToQuestion(i)}
-                  className={`aspect-square rounded-lg text-sm font-medium transition-colors ${
-                    isCurrent
-                      ? "bg-primary text-primary-foreground"
-                      : answered
-                        ? "bg-muted text-muted-foreground"
-                        : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              );
-            })}
+    <div className="min-h-[calc(100vh-4rem)] bg-background">
+      <div className="sticky top-16 z-40 bg-card border-b border-border">
+        <div className="container py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/simulation"
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              All Tests
+            </Link>
+            <button
+              onClick={handleRestart}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Restart
+            </button>
           </div>
-        </div>
-      </aside>
-
-      <main className="flex-1 min-w-0">
-        <div className="sticky top-16 z-40 bg-card border-b border-border">
-          <div className="container py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-muted-foreground">
               Question {currentIndex + 1} / {total}
             </span>
@@ -276,8 +234,21 @@ export default function SimulationPlayer({
             </span>
           </div>
         </div>
+      </div>
 
-        <div className="container max-w-2xl py-10">
+      <div className="container py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8">
+          <aside className="space-y-6 order-2 lg:order-1">
+            <ProgressTracker
+              total={total}
+              currentIndex={currentIndex}
+              answers={answers}
+              questions={questions}
+              onQuestionSelect={goToQuestion}
+            />
+          </aside>
+
+          <main className="order-1 lg:order-2 max-w-3xl">
           <AnimatePresence mode="wait">
             <motion.div
               key={question.id}
@@ -301,6 +272,30 @@ export default function SimulationPlayer({
                     e.key === "Enter" && canSubmit && handleSubmitAnswer()
                   }
                 />
+              ) : question.type === "matching" && question.matchPairs ? (
+                <div className="space-y-4">
+                  {question.matchPairs.map((pair, i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border-2 border-border bg-card"
+                    >
+                      <span className="font-medium text-foreground shrink-0 sm:w-48">{pair.left}</span>
+                      <span className="hidden sm:inline text-muted-foreground">→</span>
+                      <select
+                        value={matchingSelections[i] ?? ""}
+                        onChange={(e) => setMatchingSelections((prev) => ({ ...prev, [i]: e.target.value }))}
+                        className="flex-1 px-4 py-3 rounded-lg border border-input bg-background text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="">Select match...</option>
+                        {matchingRightOptions.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <div className="space-y-3">
                   {question.options?.map((opt, i) => {
@@ -331,19 +326,22 @@ export default function SimulationPlayer({
                 </div>
               )}
 
-              <div className="mt-8">
-                <button
+              <div className="mt-8 flex justify-end">
+                <Button
+                  variant="action"
                   onClick={handleSubmitAnswer}
                   disabled={!canSubmit}
-                  className="w-full sm:w-auto px-8 py-3 rounded-xl bg-muted text-foreground font-semibold hover:bg-muted/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="gap-2"
                 >
-                  Next
-                </button>
+                  Submit Answer
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </div>
             </motion.div>
           </AnimatePresence>
+          </main>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -103,8 +104,14 @@ export function RegisterForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button
+          type="submit"
+          variant="action"
+          className="w-full gap-2"
+          disabled={form.formState.isSubmitting}
+        >
           {form.formState.isSubmitting ? "Creating account..." : "Create account"}
+          {!form.formState.isSubmitting && <ArrowRight className="w-4 h-4" />}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}

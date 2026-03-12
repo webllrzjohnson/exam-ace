@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         question: q.question,
         options: q.options as string[] | undefined,
         correctAnswer: q.correctAnswer,
+        matchPairs: q.matchPairs as { left: string; right: string }[] | undefined,
         explanation: q.explanation,
         topic: q.topic,
         difficulty: q.difficulty,

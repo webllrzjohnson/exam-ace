@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,12 +31,27 @@ const QuestionSchema = z.object({
   type: z.enum(["single", "multiple", "boolean", "fill", "matching"]),
   question: z.string().min(1, "Question is required"),
   options: z.string().optional(),
-  correctAnswer: z.string().min(1, "Correct answer is required"),
+  correctAnswer: z.string().optional(),
   correctAnswersMultiple: z.string().optional(),
+  matchPairs: z.string().optional(),
   explanation: z.string().min(1, "Explanation is required"),
   topic: z.string().min(1, "Topic is required"),
   difficulty: z.enum(["Easy", "Medium", "Hard"]),
-});
+})
+  .refine((data) => data.type !== "matching" || (data.matchPairs ?? "").trim().length > 0, {
+    message: "Match pairs required (one per line: left | right)",
+    path: ["matchPairs"],
+  })
+  .refine((data) => data.type !== "multiple" || (data.correctAnswersMultiple ?? data.correctAnswer ?? "").trim().length > 0, {
+    message: "Correct answers required",
+    path: ["correctAnswersMultiple"],
+  })
+  .refine(
+    (data) =>
+      (data.type !== "single" && data.type !== "boolean" && data.type !== "fill") ||
+      (data.correctAnswer ?? "").trim().length > 0,
+    { message: "Correct answer required", path: ["correctAnswer"] }
+  );
 
 type QuestionInput = z.infer<typeof QuestionSchema>;
 
@@ -62,6 +77,7 @@ export default function QuestionForm({
       options: "",
       correctAnswer: "",
       correctAnswersMultiple: "",
+      matchPairs: "",
       explanation: "",
       topic: "",
       difficulty: "Easy",
@@ -85,13 +101,19 @@ export default function QuestionForm({
       .then((r) => (r.ok ? r.json() : null))
       .then((q) => {
         if (q) {
+          const matchPairsStr = Array.isArray(q.matchPairs)
+            ? (q.matchPairs as { left: string; right: string }[])
+                .map((p) => `${p.left} | ${p.right}`)
+                .join("\n")
+            : "";
           form.reset({
             quizId: q.quizId,
             type: q.type,
             question: q.question,
             options: Array.isArray(q.options) ? q.options.join("\n") : "",
-            correctAnswer: Array.isArray(q.correctAnswer) ? q.correctAnswer.join(", ") : String(q.correctAnswer),
+            correctAnswer: Array.isArray(q.correctAnswer) ? q.correctAnswer.join(", ") : String(q.correctAnswer ?? ""),
             correctAnswersMultiple: Array.isArray(q.correctAnswer) ? q.correctAnswer.join(", ") : "",
+            matchPairs: matchPairsStr,
             explanation: q.explanation,
             topic: q.topic,
             difficulty: q.difficulty,
@@ -114,14 +136,32 @@ export default function QuestionForm({
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean)
-        : values.correctAnswer;
+        : values.type === "matching"
+          ? []
+          : values.correctAnswer;
+    const matchPairs =
+      values.type === "matching" && values.matchPairs
+        ? values.matchPairs
+            .split("\n")
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .map((line) => {
+              const sep = line.includes("|") ? "|" : line.includes("–") ? "–" : "-";
+              const idx = line.indexOf(sep);
+              const left = idx >= 0 ? line.slice(0, idx).trim() : line;
+              const right = idx >= 0 ? line.slice(idx + sep.length).trim() : "";
+              return { left, right };
+            })
+            .filter((p) => p.left && p.right)
+        : undefined;
 
     const body = {
       quizId: values.quizId,
       type: values.type,
       question: values.question,
-      options,
-      correctAnswer,
+      options: values.type === "matching" ? undefined : options,
+      correctAnswer: values.type === "matching" ? (matchPairs ?? []) : correctAnswer,
+      matchPairs: values.type === "matching" ? matchPairs : undefined,
       explanation: values.explanation,
       topic: values.topic,
       difficulty: values.difficulty,
@@ -246,6 +286,26 @@ export default function QuestionForm({
             />
           )}
 
+          {type === "matching" && (
+            <FormField
+              control={form.control}
+              name="matchPairs"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Match pairs (one per line: left | right)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      rows={6}
+                      placeholder={"Capital | Ottawa&#10;Largest province | Quebec&#10;National day | July 1"}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
           {type === "multiple" ? (
             <FormField
               control={form.control}
@@ -260,7 +320,7 @@ export default function QuestionForm({
                 </FormItem>
               )}
             />
-          ) : (
+          ) : type !== "matching" ? (
             <FormField
               control={form.control}
               name="correctAnswer"
@@ -274,7 +334,7 @@ export default function QuestionForm({
                 </FormItem>
               )}
             />
-          )}
+          ) : null}
 
           <FormField
             control={form.control}
@@ -328,8 +388,14 @@ export default function QuestionForm({
           />
 
           <div className="flex gap-3">
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            <Button
+              type="submit"
+              variant="action"
+              disabled={form.formState.isSubmitting}
+              className="gap-2"
+            >
               {form.formState.isSubmitting ? "Saving..." : questionId ? "Update" : "Create"}
+              {!form.formState.isSubmitting && <ArrowRight className="w-4 h-4" />}
             </Button>
             <Link href="/admin/questions">
               <Button type="button" variant="outline">

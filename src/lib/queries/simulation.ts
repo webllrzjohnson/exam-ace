@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { deduplicateByContent } from "@/lib/utils";
 
 const QUESTIONS_PER_SIMULATION = 20;
 
@@ -12,19 +13,21 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export async function getSimulationQuestionsMixed(): Promise<
-  { id: string; type: string; question: string; options: unknown; correctAnswer: unknown; explanation: string; topic: string; difficulty: string }[]
+  { id: string; type: string; question: string; options: unknown; correctAnswer: unknown; matchPairs?: unknown; explanation: string; topic: string; difficulty: string }[]
 > {
   const questions = await db.question.findMany({
     include: { quiz: { include: { category: true } } },
   });
-  const eligible = questions.filter((q) => q.type !== "matching" && q.options);
-  const shuffled = shuffle(eligible);
+  const eligible = questions.filter((q) => (q.type === "matching" && q.matchPairs) || (q.type !== "matching" && q.options));
+  const deduped = deduplicateByContent(eligible);
+  const shuffled = shuffle(deduped);
   return shuffled.slice(0, QUESTIONS_PER_SIMULATION).map((q) => ({
     id: q.id,
     type: q.type,
     question: q.question,
     options: q.options,
     correctAnswer: q.correctAnswer,
+    matchPairs: q.matchPairs,
     explanation: q.explanation,
     topic: q.topic,
     difficulty: q.difficulty,
@@ -34,20 +37,22 @@ export async function getSimulationQuestionsMixed(): Promise<
 export async function getSimulationQuestionsByCategory(
   categorySlug: string
 ): Promise<
-  { id: string; type: string; question: string; options: unknown; correctAnswer: unknown; explanation: string; topic: string; difficulty: string }[]
+  { id: string; type: string; question: string; options: unknown; correctAnswer: unknown; matchPairs?: unknown; explanation: string; topic: string; difficulty: string }[]
 > {
   const questions = await db.question.findMany({
     where: { quiz: { category: { slug: categorySlug } } },
     include: { quiz: { include: { category: true } } },
   });
-  const eligible = questions.filter((q) => q.type !== "matching" && q.options);
-  const shuffled = shuffle(eligible);
+  const eligible = questions.filter((q) => (q.type === "matching" && q.matchPairs) || (q.type !== "matching" && q.options));
+  const deduped = deduplicateByContent(eligible);
+  const shuffled = shuffle(deduped);
   return shuffled.slice(0, QUESTIONS_PER_SIMULATION).map((q) => ({
     id: q.id,
     type: q.type,
     question: q.question,
     options: q.options,
     correctAnswer: q.correctAnswer,
+    matchPairs: q.matchPairs,
     explanation: q.explanation,
     topic: q.topic,
     difficulty: q.difficulty,

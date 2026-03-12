@@ -15,7 +15,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "quiz:transform": "tsx scripts/transform-quiz-import.ts",
-    "db:merge-quizzes": "tsx scripts/merge-duplicate-quizzes.ts"
+    "db:merge-quizzes": "tsx scripts/merge-duplicate-quizzes.ts",
+    "db:remove-duplicate-questions": "tsx scripts/remove-duplicate-questions.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

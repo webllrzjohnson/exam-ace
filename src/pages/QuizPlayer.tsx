@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle, Clock, ArrowRight, ChevronRight, RotateCcw } from "lucide-react";
-import { isFillAnswerCorrect } from "@/lib/utils";
+import { isFillAnswerCorrect, isMatchingAnswerCorrect, shuffleArray } from "@/lib/utils";
 import { setQuizResult } from "@/lib/quiz-storage";
 import { getUserTier, canAccessFeature } from "@/lib/access-control";
 import { UpgradePrompt } from "@/components/paywall/upgrade-prompt";
 import { ProgressTracker } from "@/components/quiz/progress-tracker";
 import { StudyAssistant } from "@/components/quiz/study-assistant";
+import { Button } from "@/components/ui/button";
+
+type MatchPair = { left: string; right: string };
 
 type Question = {
   id: string;
@@ -18,6 +21,7 @@ type Question = {
   question: string;
   options?: string[];
   correctAnswer: string | string[];
+  matchPairs?: MatchPair[];
   explanation: string;
   hints?: string[];
   topic: string;
@@ -44,10 +48,11 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[] | MatchPair[]>>({});
   const [showFeedback, setShowFeedback] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [fillAnswer, setFillAnswer] = useState("");
+  const [matchingSelections, setMatchingSelections] = useState<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [finished, setFinished] = useState(false);
@@ -106,13 +111,18 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
         finalAnswers[question.id] = fillAnswer.trim();
       } else if (question.type === "multiple") {
         finalAnswers[question.id] = selectedOptions;
+      } else if (question.type === "matching" && question.matchPairs) {
+        finalAnswers[question.id] = question.matchPairs.map((p, i) => ({
+          left: p.left,
+          right: matchingSelections[i] ?? "",
+        }));
       } else if (selectedOptions.length > 0) {
         finalAnswers[question.id] = selectedOptions[0];
       }
     }
     setQuizResult({ quizId: quiz.id, answers: finalAnswers, timeTaken, mode, questions: quiz.questions });
     router.push(`/quiz/${quiz.id}/results`);
-  }, [answers, fillAnswer, selectedOptions, question, router, quiz, startTime, mode, finished]);
+  }, [answers, fillAnswer, selectedOptions, matchingSelections, question, router, quiz, startTime, mode, finished]);
 
   useEffect(() => {
     if (mode !== "timed" || !quiz) return;
@@ -128,6 +138,11 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
     }, 1000);
     return () => clearInterval(interval);
   }, [mode, quiz, handleFinish]);
+
+  const matchingRightOptions = useMemo(() => {
+    if (!question || question.type !== "matching" || !question.matchPairs) return [];
+    return shuffleArray((question.matchPairs as MatchPair[]).map((p) => p.right));
+  }, [question?.id, question?.type, question?.matchPairs]);
 
   if (accessDenied.show) {
     return (
@@ -160,6 +175,11 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
         question.correctAnswer.every((a) => selectedOptions.includes(a))
       );
     }
+    if (question.type === "matching" && question.matchPairs) {
+      const pairs = question.matchPairs as MatchPair[];
+      const userPairs = pairs.map((p, i) => ({ left: p.left, right: matchingSelections[i] ?? "" }));
+      return isMatchingAnswerCorrect(userPairs, pairs);
+    }
     return selectedOptions[0] === question.correctAnswer;
   };
 
@@ -183,6 +203,7 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
     setShowFeedback(false);
     setSelectedOptions([]);
     setFillAnswer("");
+    setMatchingSelections({});
     if (currentIndex + 1 >= total) {
       handleFinish();
     } else {
@@ -198,7 +219,12 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
     }
   };
 
-  const canSubmit = question.type === "fill" ? fillAnswer.trim().length > 0 : selectedOptions.length > 0;
+  const canSubmit =
+    question.type === "fill"
+      ? fillAnswer.trim().length > 0
+      : question.type === "matching" && question.matchPairs
+        ? question.matchPairs.every((_, i) => !!matchingSelections[i])
+        : selectedOptions.length > 0;
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 
   return (
@@ -284,6 +310,46 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
                 className="w-full px-5 py-4 rounded-xl border-2 border-input bg-card text-foreground text-lg font-medium focus:outline-none focus:border-primary transition-colors disabled:opacity-60"
                 onKeyDown={(e) => e.key === "Enter" && canSubmit && !showFeedback && handleSubmitAnswer()}
               />
+            ) : question.type === "matching" && question.matchPairs ? (
+              <div className="space-y-4">
+                {(question.matchPairs as MatchPair[]).map((pair, i) => {
+                    const selected = matchingSelections[i];
+                    const correctRight = pair.right;
+                    const isCorrect = showFeedback && selected === correctRight;
+                    const isWrong = showFeedback && selected && selected !== correctRight;
+                    return (
+                      <div
+                        key={i}
+                        className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                          showFeedback
+                            ? isCorrect
+                              ? "border-success bg-success/5"
+                              : isWrong
+                                ? "border-destructive bg-destructive/5"
+                                : "border-border bg-muted/30"
+                            : "border-border bg-card"
+                        }`}
+                      >
+                        <span className="font-medium text-foreground shrink-0 sm:w-48">{pair.left}</span>
+                        <span className="hidden sm:inline text-muted-foreground">→</span>
+                        <select
+                          value={selected ?? ""}
+                          onChange={(e) => !showFeedback && setMatchingSelections((prev) => ({ ...prev, [i]: e.target.value }))}
+                          disabled={showFeedback}
+                          className="flex-1 px-4 py-3 rounded-lg border border-input bg-background text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
+                        >
+                          <option value="">Select match...</option>
+                          {matchingRightOptions.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                        {showFeedback && (isCorrect ? <CheckCircle className="w-5 h-5 text-success shrink-0" /> : isWrong ? <XCircle className="w-5 h-5 text-destructive shrink-0" /> : null)}
+                      </div>
+                    );
+                })}
+              </div>
             ) : (
               <div className="space-y-3">
                 {question.options?.map((opt, i) => {
@@ -374,6 +440,16 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
                       Correct answer: <strong>{question.correctAnswer as string}</strong>
                     </p>
                   )}
+                  {question.type === "matching" && !currentIsCorrect() && question.matchPairs && (
+                    <div className="text-sm text-foreground space-y-1">
+                      <p className="font-semibold mb-1">Correct matches:</p>
+                      {(question.matchPairs as MatchPair[]).map((p, i) => (
+                        <p key={i} className="text-muted-foreground">
+                          {p.left} → {p.right}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <StudyAssistant
                   hints={question.hints || []}
@@ -394,22 +470,20 @@ export default function QuizPlayer({ id, mode, count, time, untimed }: QuizPlaye
 
             <div className="mt-8 flex justify-end">
               {showFeedback ? (
-                <button
-                  onClick={goNext}
-                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
-                >
+                <Button variant="action" onClick={goNext} className="gap-2">
                   {currentIndex + 1 >= total ? "See Results" : "Next Question"}
                   <ChevronRight className="w-4 h-4" />
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
+                  variant="action"
                   onClick={handleSubmitAnswer}
                   disabled={!canSubmit}
-                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="gap-2"
                 >
                   Submit Answer
                   <ArrowRight className="w-4 h-4" />
-                </button>
+                </Button>
               )}
             </div>
             </motion.div>

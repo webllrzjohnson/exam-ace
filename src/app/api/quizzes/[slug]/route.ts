@@ -51,7 +51,7 @@ export async function GET(
       categoryIcon: quiz.categoryIcon,
       difficulty: quiz.difficulty,
       questionCount: quiz.questions.length,
-      timeLimit: options ? options.timeLimit : quiz.timeLimit,
+      timeLimit: options?.timeLimit ?? quiz.timeLimit,
       passRate: quiz.passRate,
       avgScore: quiz.avgScore,
       topics: quiz.topics,

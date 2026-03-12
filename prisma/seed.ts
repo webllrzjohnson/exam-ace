@@ -65,6 +65,30 @@ async function main() {
     { type: "single" as const, question: "Which document did the British Parliament pass in 1982 that patriated the Canadian Constitution?", options: ["British North America Act", "Constitution Act, 1982", "Statute of Westminster", "Charter of Rights"], correctAnswer: "Constitution Act, 1982", explanation: "The Constitution Act, 1982 patriated the Constitution and included the Charter.", topic: "Constitution", difficulty: "Hard" },
     { type: "single" as const, question: "In which year did Indigenous people in Canada gain the right to vote in federal elections without losing status?", options: ["1948", "1960", "1982", "1996"], correctAnswer: "1960", explanation: "Indigenous people gained the right to vote federally in 1960.", topic: "Rights History", difficulty: "Hard" },
     { type: "multiple" as const, question: "Which of the following are responsibilities of Canadian citizenship?", options: ["Obeying the law", "Serving in the military", "Voting in elections", "Helping others in the community"], correctAnswer: ["Obeying the law", "Voting in elections", "Helping others in the community"], explanation: "Serving in the military is voluntary, not a citizenship responsibility.", topic: "Responsibilities", difficulty: "Hard" },
+    {
+      type: "matching" as const,
+      question: "Match each historical fact with its correct answer.",
+      matchPairs: [
+        { left: "Year of Confederation", right: "1867" },
+        { left: "First Prime Minister", right: "Sir John A. Macdonald" },
+        { left: "Charter became law", right: "1982" },
+      ],
+      explanation: "Canada was founded in 1867, Sir John A. Macdonald was first PM, and the Charter was enacted in 1982.",
+      topic: "Confederation",
+      difficulty: "Easy",
+    },
+    {
+      type: "matching" as const,
+      question: "Match each historical event with its year.",
+      matchPairs: [
+        { left: "Women gained federal vote", right: "1918" },
+        { left: "Indigenous people gained federal vote", right: "1960" },
+        { left: "Battle of Vimy Ridge", right: "1917" },
+      ],
+      explanation: "Women in 1918, Indigenous people in 1960, Vimy Ridge in April 1917.",
+      topic: "Rights History",
+      difficulty: "Medium",
+    },
   ];
 
   const rightsQuestions = [
@@ -78,6 +102,30 @@ async function main() {
     { type: "single" as const, question: "Which right allows Canadians to practice any religion or no religion?", options: ["Equality rights", "Freedom of conscience and religion", "Mobility rights", "Legal rights"], correctAnswer: "Freedom of conscience and religion", explanation: "Protected under Section 2 of the Charter.", topic: "Charter", difficulty: "Medium" },
     { type: "single" as const, question: "Under Section 33 of the Charter, what can Parliament or a legislature do?", options: ["Abolish the Charter", "Override certain Charter rights with the notwithstanding clause", "Appoint judges", "Change the Constitution unilaterally"], correctAnswer: "Override certain Charter rights with the notwithstanding clause", explanation: "The notwithstanding clause allows temporary override of some rights.", topic: "Charter", difficulty: "Hard" },
     { type: "fill" as const, question: "The right to life, liberty, and security of the person is protected under Section ___ of the Charter.", correctAnswer: "7", explanation: "Section 7 guarantees fundamental justice rights.", topic: "Legal Rights", difficulty: "Hard" },
+    {
+      type: "matching" as const,
+      question: "Match each right or responsibility with its correct answer.",
+      matchPairs: [
+        { left: "Mobility rights (enter/leave Canada)", right: "Section 6" },
+        { left: "Voting age", right: "18" },
+        { left: "Men and women equal under the", right: "law" },
+      ],
+      explanation: "Section 6 guarantees mobility rights, citizens vote at 18, and Section 15 guarantees equality.",
+      topic: "Charter",
+      difficulty: "Easy",
+    },
+    {
+      type: "matching" as const,
+      question: "Match each Charter section with its protection.",
+      matchPairs: [
+        { left: "Section 2", right: "Fundamental freedoms (religion, expression)" },
+        { left: "Section 7", right: "Life, liberty, security of person" },
+        { left: "Section 33", right: "Notwithstanding clause" },
+      ],
+      explanation: "Section 2: fundamental freedoms; Section 7: legal rights; Section 33: override clause.",
+      topic: "Charter",
+      difficulty: "Medium",
+    },
   ];
 
   const governmentQuestions = [
@@ -91,6 +139,30 @@ async function main() {
     { type: "single" as const, question: "What is the maximum term length for the House of Commons before an election must be called?", options: ["3 years", "4 years", "5 years", "6 years"], correctAnswer: "5 years", explanation: "The Constitution sets a maximum of 5 years.", topic: "Parliament", difficulty: "Hard" },
     { type: "single" as const, question: "Who has the power to dissolve Parliament and call an election?", options: ["The Prime Minister", "The Chief Electoral Officer", "The Governor General", "The Speaker of the House"], correctAnswer: "The Governor General", explanation: "The GG acts on the PM's advice to dissolve Parliament.", topic: "Parliament", difficulty: "Hard" },
     { type: "fill" as const, question: "A bill must receive _____ in both the House of Commons and Senate before becoming law.", correctAnswer: "Royal Assent", explanation: "Royal Assent is the final step before a bill becomes law.", topic: "Parliament", difficulty: "Hard" },
+    {
+      type: "matching" as const,
+      question: "Match each government role or concept with its correct answer.",
+      matchPairs: [
+        { left: "Head of state", right: "The Sovereign (King/Queen)" },
+        { left: "MPs are chosen by", right: "Elected by voters in their riding" },
+        { left: "Three branches of government", right: "Executive, Legislative, Judicial" },
+      ],
+      explanation: "The Sovereign is head of state, MPs are elected, and the three branches are Executive, Legislative, and Judicial.",
+      topic: "System of Government",
+      difficulty: "Easy",
+    },
+    {
+      type: "matching" as const,
+      question: "Match each Parliament role with its description.",
+      matchPairs: [
+        { left: "Dissolves Parliament", right: "Governor General" },
+        { left: "Maximum House of Commons term", right: "5 years" },
+        { left: "Final step for a bill to become law", right: "Royal Assent" },
+      ],
+      explanation: "The GG dissolves Parliament, max term is 5 years, Royal Assent is required for bills.",
+      topic: "Parliament",
+      difficulty: "Medium",
+    },
   ];
 
   const geographyQuestions = [
@@ -98,6 +170,30 @@ async function main() {
     { type: "single" as const, question: "Which province is the largest by area?", options: ["Ontario", "Quebec", "British Columbia", "Alberta"], correctAnswer: "Quebec", explanation: "Quebec is the largest province by land area.", topic: "Provinces", difficulty: "Medium" },
     { type: "single" as const, question: "Which territory was created in 1999?", options: ["Yukon", "Northwest Territories", "Nunavut", "Labrador"], correctAnswer: "Nunavut", explanation: "Nunavut became a territory on April 1, 1999.", topic: "Territories", difficulty: "Hard" },
     { type: "fill" as const, question: "The _____ Ocean borders Canada to the west.", correctAnswer: "Pacific", explanation: "British Columbia borders the Pacific Ocean.", topic: "Geography", difficulty: "Easy" },
+    {
+      type: "matching" as const,
+      question: "Match each item with its correct answer.",
+      matchPairs: [
+        { left: "Capital", right: "Ottawa" },
+        { left: "Largest province", right: "Quebec" },
+        { left: "National day", right: "July 1" },
+      ],
+      explanation: "Ottawa is the capital, Quebec is the largest province by area, and Canada Day is celebrated on July 1.",
+      topic: "Provinces",
+      difficulty: "Easy",
+    },
+    {
+      type: "matching" as const,
+      question: "Match each geographic fact with its answer.",
+      matchPairs: [
+        { left: "Ocean to the west", right: "Pacific" },
+        { left: "Territory created in 1999", right: "Nunavut" },
+        { left: "Largest territory by area", right: "Nunavut" },
+      ],
+      explanation: "Pacific borders BC, Nunavut was created in 1999 and is the largest territory.",
+      topic: "Geography",
+      difficulty: "Medium",
+    },
   ];
 
   const economyQuestions = [
@@ -114,6 +210,30 @@ async function main() {
     { type: "single" as const, question: "Which organization helps protect workers' rights in Canada?", options: ["Labour unions", "Chambers of Commerce", "Stock exchanges", "Banks"], correctAnswer: "Labour unions", explanation: "Unions negotiate wages and working conditions.", topic: "Economy", difficulty: "Easy" },
     { type: "boolean" as const, question: "Canada has a mixed economy with both private and public sectors.", options: ["True", "False"], correctAnswer: "True", explanation: "Canada combines free-market enterprise with government services.", topic: "Economy", difficulty: "Easy" },
     { type: "single" as const, question: "Which province is a major hub for the film and television industry?", options: ["Alberta", "Ontario", "British Columbia", "Both Ontario and British Columbia"], correctAnswer: "Both Ontario and British Columbia", explanation: "Toronto and Vancouver are major production centres.", topic: "Industry", difficulty: "Hard" },
+    {
+      type: "matching" as const,
+      question: "Match each economic fact with its correct answer.",
+      matchPairs: [
+        { left: "Largest trading partner", right: "United States" },
+        { left: "Canadian currency", right: "Canadian Dollar" },
+        { left: "Central bank", right: "Bank of Canada" },
+      ],
+      explanation: "The US is Canada's largest trading partner, the currency is the Canadian Dollar, and the Bank of Canada manages monetary policy.",
+      topic: "Economy",
+      difficulty: "Easy",
+    },
+    {
+      type: "matching" as const,
+      question: "Match each industry or resource with its province.",
+      matchPairs: [
+        { left: "Oil sands", right: "Alberta" },
+        { left: "Film and TV production hub", right: "Ontario and British Columbia" },
+        { left: "Free trade agreement (US, Mexico)", right: "USMCA" },
+      ],
+      explanation: "Alberta has oil sands; Toronto and Vancouver are production hubs; USMCA replaced NAFTA.",
+      topic: "Industry",
+      difficulty: "Medium",
+    },
   ];
 
   const cultureQuestions = [
@@ -130,6 +250,59 @@ async function main() {
     { type: "boolean" as const, question: "Canadian law requires employers to accommodate religious practices where possible.", options: ["True", "False"], correctAnswer: "True", explanation: "Human rights law protects religious freedom in the workplace.", topic: "Multiculturalism", difficulty: "Medium" },
     { type: "single" as const, question: "Which symbol represents Canada's bilingual nature?", options: ["The beaver", "The maple leaf", "The flag", "All official documents in both languages"], correctAnswer: "All official documents in both languages", explanation: "Federal services and documents are available in English and French.", topic: "Languages", difficulty: "Easy" },
     { type: "single" as const, question: "What does 'mosaic' often describe in Canadian society?", options: ["A type of art", "Different cultures coexisting while keeping their identity", "Assimilation", "A single culture"], correctAnswer: "Different cultures coexisting while keeping their identity", explanation: "Canada is often described as a cultural mosaic.", topic: "Multiculturalism", difficulty: "Medium" },
+    {
+      type: "matching" as const,
+      question: "Match each language or culture fact with its correct answer.",
+      matchPairs: [
+        { left: "Official languages", right: "English and French" },
+        { left: "Only officially bilingual province", right: "New Brunswick" },
+        { left: "French-only official language province", right: "Quebec" },
+      ],
+      explanation: "Canada has two official languages; New Brunswick is bilingual; Quebec's only official language is French.",
+      topic: "Languages",
+      difficulty: "Easy",
+    },
+    {
+      type: "matching" as const,
+      question: "Match each Canadian value or concept with its description.",
+      matchPairs: [
+        { left: "Cultural mosaic", right: "Cultures coexisting while keeping identity" },
+        { left: "Potlatch", right: "Indigenous ceremonial feast and gift-giving" },
+        { left: "Founding peoples", right: "Indigenous, French, and British" },
+      ],
+      explanation: "Mosaic describes diversity; potlatch is a West Coast Indigenous ceremony; three founding peoples.",
+      topic: "Society",
+      difficulty: "Medium",
+    },
+  ];
+
+  const symbolsQuestions = [
+    { type: "single" as const, question: "What is on the Canadian flag?", options: ["A star", "A maple leaf", "A beaver", "A crown"], correctAnswer: "A maple leaf", explanation: "The Canadian flag features a red maple leaf.", topic: "Flag", difficulty: "Easy" },
+    { type: "single" as const, question: "What is Canada's national anthem?", options: ["God Save the King", "O Canada", "The Maple Leaf Forever", "O Canada and God Save the King"], correctAnswer: "O Canada", explanation: "O Canada became the national anthem in 1980.", topic: "National Anthem", difficulty: "Easy" },
+    {
+      type: "matching" as const,
+      question: "Match each Canadian symbol with its correct answer.",
+      matchPairs: [
+        { left: "National flag symbol", right: "Maple leaf" },
+        { left: "National anthem", right: "O Canada" },
+        { left: "National animal", right: "Beaver" },
+      ],
+      explanation: "The flag has a maple leaf, O Canada is the anthem, and the beaver is the national animal.",
+      topic: "Symbols",
+      difficulty: "Easy",
+    },
+    {
+      type: "matching" as const,
+      question: "Match each Canadian symbol with its significance.",
+      matchPairs: [
+        { left: "Red and white on the flag", right: "Canada's national colours" },
+        { left: "O Canada became official", right: "1980" },
+        { left: "Beaver represents", right: "Industry and perseverance" },
+      ],
+      explanation: "Red and white are national colours; O Canada official in 1980; beaver symbolizes industry.",
+      topic: "Symbols",
+      difficulty: "Medium",
+    },
   ];
 
   const economyCat = await db.category.findUniqueOrThrow({ where: { slug: "economy" } });
@@ -140,10 +313,10 @@ async function main() {
     { slug: "rights-and-freedoms", title: "Rights & Freedoms", description: "Explore the Canadian Charter.", categoryId: rightsCat.id, categoryIcon: "⚖️", difficulty: "Medium", timeLimit: 12, passRate: 72, avgScore: 68, featured: true, topics: ["Charter", "Mobility Rights", "Voting"], questions: rightsQuestions },
     { slug: "government-and-democracy", title: "Government & Democracy", description: "Learn how Canada's government works.", categoryId: govCat.id, categoryIcon: "🏛️", difficulty: "Medium", timeLimit: 10, passRate: 70, avgScore: 65, featured: true, topics: ["System of Government", "Parliament", "Elections"], questions: governmentQuestions },
     { slug: "geography-of-canada", title: "Geography of Canada", description: "Discover Canada's geography.", categoryId: geoCat.id, categoryIcon: "🗺️", difficulty: "Easy", timeLimit: 15, passRate: 80, avgScore: 75, featured: false, topics: ["Provinces", "Territories"], questions: geographyQuestions },
-    { slug: "canadian-symbols", title: "Canadian Symbols & Anthem", description: "How well do you know Canada's symbols?", categoryId: symCat.id, categoryIcon: "🍁", difficulty: "Easy", timeLimit: 10, passRate: 85, avgScore: 80, featured: false, topics: ["Flag", "National Anthem"], questions: rightsQuestions.map((q, i) => ({ ...q, topic: "Symbols" })) },
+    { slug: "canadian-symbols", title: "Canadian Symbols & Anthem", description: "How well do you know Canada's symbols?", categoryId: symCat.id, categoryIcon: "🍁", difficulty: "Easy", timeLimit: 10, passRate: 85, avgScore: 80, featured: false, topics: ["Flag", "National Anthem", "Symbols"], questions: symbolsQuestions },
     { slug: "canadian-economy-industry", title: "Canadian Economy & Industry", description: "Learn about Canada's economy and trade.", categoryId: economyCat.id, categoryIcon: "💼", difficulty: "Medium", timeLimit: 10, passRate: 70, avgScore: 65, featured: false, topics: ["Trade", "Economy"], questions: economyQuestions },
     { slug: "canadian-culture-society", title: "Canadian Culture & Society", description: "Discover Canadian culture and multiculturalism.", categoryId: cultureCat.id, categoryIcon: "🎭", difficulty: "Easy", timeLimit: 10, passRate: 85, avgScore: 80, featured: false, topics: ["Languages", "Multiculturalism", "Society"], questions: cultureQuestions },
-    { slug: "advanced-citizenship", title: "Advanced Citizenship Prep", description: "Comprehensive quiz for the real exam.", categoryId: historyCat.id, categoryIcon: "🏛️", difficulty: "Hard", timeLimit: 30, passRate: 55, avgScore: 58, featured: true, topics: ["Canadian History", "Culture and Society", "Economy and Industry", "Geography and Regions", "Government and Democracy", "Rights and Responsibilities", "Symbols and Anthems"], questions: [...historyQuestions, ...rightsQuestions, ...governmentQuestions, ...geographyQuestions, ...economyQuestions, ...cultureQuestions].slice(0, 20) },
+    { slug: "advanced-citizenship", title: "Advanced Citizenship Prep", description: "Comprehensive quiz for the real exam.", categoryId: historyCat.id, categoryIcon: "🏛️", difficulty: "Hard", timeLimit: 30, passRate: 55, avgScore: 58, featured: true, topics: ["Canadian History", "Culture and Society", "Economy and Industry", "Geography and Regions", "Government and Democracy", "Rights and Responsibilities", "Symbols and Anthems"], questions: [...historyQuestions, ...rightsQuestions, ...governmentQuestions, ...geographyQuestions, ...economyQuestions, ...cultureQuestions, ...symbolsQuestions].slice(0, 25) },
   ];
 
   for (const q of quizData) {
@@ -155,19 +328,28 @@ async function main() {
     });
     const existingCount = await db.question.count({ where: { quizId: quiz.id } });
     const shouldAddMissing =
-      (quizMeta.slug === "canadian-economy-industry" || quizMeta.slug === "canadian-culture-society") &&
+      (quizMeta.slug === "canadian-history-basics" ||
+        quizMeta.slug === "rights-and-freedoms" ||
+        quizMeta.slug === "government-and-democracy" ||
+        quizMeta.slug === "canadian-economy-industry" ||
+        quizMeta.slug === "canadian-culture-society" ||
+        quizMeta.slug === "geography-of-canada" ||
+        quizMeta.slug === "canadian-symbols") &&
       existingCount > 0 &&
       existingCount < questions.length;
     if (existingCount === 0 || shouldAddMissing) {
       const toCreate = shouldAddMissing ? questions.slice(existingCount) : questions;
       for (const qu of toCreate) {
+        const isMatching = qu.type === "matching" && "matchPairs" in qu && Array.isArray(qu.matchPairs);
+        const matchPairs = isMatching ? (qu as { matchPairs: { left: string; right: string }[] }).matchPairs : undefined;
         await db.question.create({
           data: {
             quizId: quiz.id,
             type: qu.type,
             question: qu.question,
-            options: qu.options ?? undefined,
-            correctAnswer: qu.correctAnswer as object,
+            options: isMatching ? null : (qu.options ?? undefined),
+            correctAnswer: (isMatching ? matchPairs : qu.correctAnswer) as object,
+            matchPairs: matchPairs as object | undefined,
             explanation: qu.explanation,
             topic: qu.topic,
             difficulty: qu.difficulty,

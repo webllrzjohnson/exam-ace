@@ -23,6 +23,7 @@ export async function GET(
       ...question,
       options: question.options as string[] | undefined,
       correctAnswer: question.correctAnswer,
+      matchPairs: question.matchPairs as { left: string; right: string }[] | undefined,
     });
   } catch (e) {
     console.error("[api/questions GET]", e);

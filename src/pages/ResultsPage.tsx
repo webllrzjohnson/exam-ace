@@ -6,16 +6,19 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Clock, RotateCcw, Home, Eye, Crown } from "lucide-react";
-import { isFillAnswerCorrect } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { isFillAnswerCorrect, isMatchingAnswerCorrect } from "@/lib/utils";
 import { getQuizResult, clearQuizResult, setQuizReview } from "@/lib/quiz-storage";
 import { canAccessFeature, getUserTier } from "@/lib/access-control";
+
+type MatchPair = { left: string; right: string };
 
 type Question = {
   id: string;
   type: string;
   question: string;
   options?: string[];
-  correctAnswer: string | string[];
+  correctAnswer: string | string[] | MatchPair[];
   explanation: string;
   topic: string;
   difficulty: string;
@@ -25,7 +28,7 @@ export default function ResultsPage({ id }: { id: string }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [quiz, setQuiz] = useState<{ questions: Question[] } | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[] | MatchPair[]>>({});
   const [timeTaken, setTimeTaken] = useState(0);
   const [mode, setMode] = useState("practice");
   const [loading, setLoading] = useState(true);
@@ -58,8 +61,12 @@ export default function ResultsPage({ id }: { id: string }) {
     const correctCount = questions.filter((q) => {
       const ans = answers[q.id];
       if (!ans) return false;
-      if (Array.isArray(q.correctAnswer)) {
-        return Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a));
+      if (q.type === "matching") {
+        const correct = q.correctAnswer as MatchPair[];
+        return Array.isArray(ans) && isMatchingAnswerCorrect(ans as MatchPair[], correct);
+      }
+      if (Array.isArray(q.correctAnswer) && q.type === "multiple") {
+        return Array.isArray(ans) && q.correctAnswer.length === ans.length && (q.correctAnswer as string[]).every((a) => (ans as string[]).includes(a));
       }
       if (q.type === "fill") {
         return typeof ans === "string" && isFillAnswerCorrect(ans, q.correctAnswer as string);
@@ -90,8 +97,12 @@ export default function ResultsPage({ id }: { id: string }) {
   const correctCount = questions.filter((q) => {
     const ans = answers[q.id];
     if (!ans) return false;
-    if (Array.isArray(q.correctAnswer)) {
-      return Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a));
+    if (q.type === "matching") {
+      const correct = q.correctAnswer as MatchPair[];
+      return Array.isArray(ans) && isMatchingAnswerCorrect(ans as MatchPair[], correct);
+    }
+    if (Array.isArray(q.correctAnswer) && q.type === "multiple") {
+      return Array.isArray(ans) && q.correctAnswer.length === ans.length && (q.correctAnswer as string[]).every((a) => (ans as string[]).includes(a));
     }
     if (q.type === "fill") {
       return typeof ans === "string" && isFillAnswerCorrect(ans, q.correctAnswer as string);
@@ -105,8 +116,12 @@ export default function ResultsPage({ id }: { id: string }) {
   const wrongQuestions = questions.filter((q) => {
     const ans = answers[q.id];
     if (!ans) return true;
-    if (Array.isArray(q.correctAnswer)) {
-      return !(Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a)));
+    if (q.type === "matching") {
+      const correct = q.correctAnswer as MatchPair[];
+      return !(Array.isArray(ans) && isMatchingAnswerCorrect(ans as MatchPair[], correct));
+    }
+    if (Array.isArray(q.correctAnswer) && q.type === "multiple") {
+      return !(Array.isArray(ans) && q.correctAnswer.length === ans.length && (q.correctAnswer as string[]).every((a) => (ans as string[]).includes(a)));
     }
     if (q.type === "fill") {
       return typeof ans !== "string" || !isFillAnswerCorrect(ans, q.correctAnswer as string);
@@ -120,11 +135,14 @@ export default function ResultsPage({ id }: { id: string }) {
     entry.total++;
     const ans = answers[q.id];
     if (ans) {
-      const isCorrect = Array.isArray(q.correctAnswer)
-        ? Array.isArray(ans) && q.correctAnswer.length === ans.length && q.correctAnswer.every((a) => ans.includes(a))
-        : q.type === "fill"
-          ? typeof ans === "string" && isFillAnswerCorrect(ans, q.correctAnswer as string)
-          : ans === q.correctAnswer;
+      const isCorrect =
+        q.type === "matching"
+          ? Array.isArray(ans) && isMatchingAnswerCorrect(ans as MatchPair[], q.correctAnswer as MatchPair[])
+          : Array.isArray(q.correctAnswer) && q.type === "multiple"
+            ? Array.isArray(ans) && q.correctAnswer.length === ans.length && (q.correctAnswer as string[]).every((a) => (ans as string[]).includes(a))
+            : q.type === "fill"
+              ? typeof ans === "string" && isFillAnswerCorrect(ans, q.correctAnswer as string)
+              : ans === q.correctAnswer;
       if (isCorrect) entry.correct++;
     }
     topicMap.set(q.topic, entry);
@@ -254,51 +272,51 @@ export default function ResultsPage({ id }: { id: string }) {
 
         <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
           {wrongQuestions.length > 0 && (
-            <button
+            <Button
+              variant="action"
               onClick={() => handleReview(false)}
               disabled={!canReview}
               title={!canReview ? "Upgrade to Premium to review answers" : undefined}
-              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-opacity ${
-                canReview
-                  ? "bg-primary text-primary-foreground hover:opacity-90"
-                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
-              }`}
+              className="flex-1 min-w-[140px] gap-2"
             >
               <Eye className="w-4 h-4" />
               Review Wrong Answers
               {!canReview && <Crown className="w-4 h-4" />}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant="outline"
             onClick={() => handleReview(true)}
             disabled={!canReview}
             title={!canReview ? "Upgrade to Premium to review answers" : undefined}
-            className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-colors ${
+            className={`flex-1 min-w-[140px] gap-2 rounded-xl py-3 font-semibold ${
               canReview
-                ? "border border-primary text-primary hover:bg-primary/10"
-                : "border border-border text-muted-foreground cursor-not-allowed opacity-60"
+                ? "border-primary text-primary hover:bg-primary/10"
+                : "opacity-60 cursor-not-allowed"
             }`}
           >
             <Eye className="w-4 h-4" />
             Review All Answers
             {!canReview && <Crown className="w-4 h-4" />}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={() =>
               handleNavigate(id.startsWith("simulation") ? "/simulation" : `/quiz/${id}`)
             }
-            className="flex-1 inline-flex items-center justify-center gap-2 border border-border bg-card text-foreground py-3 rounded-xl font-semibold hover:bg-muted transition-colors"
+            className="flex-1 gap-2 rounded-xl py-3 font-semibold border-border bg-card hover:bg-muted"
           >
             <RotateCcw className="w-4 h-4" />
             {id.startsWith("simulation") ? "Back to Simulations" : "Retry Quiz"}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => handleNavigate("/")}
-            className="flex-1 inline-flex items-center justify-center gap-2 border border-border bg-card text-foreground py-3 rounded-xl font-semibold hover:bg-muted transition-colors"
+            className="flex-1 gap-2 rounded-xl py-3 font-semibold border-border bg-card hover:bg-muted"
           >
             <Home className="w-4 h-4" />
             Home
-          </button>
+          </Button>
         </div>
       </motion.div>
     </div>

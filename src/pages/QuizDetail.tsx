@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Clock, HelpCircle, Shuffle, TrendingUp, Target, BookOpen, Lock } from "lucide-react";
+import { ArrowRight, Clock, HelpCircle, Shuffle, TrendingUp, Target, BookOpen, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -205,12 +205,14 @@ export default function QuizDetail({ id, countFromCatalog }: { id: string; count
         </div>
       )}
 
-      <button
+      <Button
+        variant="action"
         onClick={handleStart}
-        className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg hover:opacity-90 transition-opacity"
+        className="w-full gap-2 text-base"
       >
-        Start Quiz →
-      </button>
+        Start Quiz
+        <ArrowRight className="w-4 h-4" />
+      </Button>
       {isGuest && (
         <p className="text-sm text-center text-muted-foreground mt-3">
           Sign up for a free account to save your results and track progress
