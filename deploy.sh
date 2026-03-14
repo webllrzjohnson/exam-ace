@@ -13,8 +13,8 @@ npm install --legacy-peer-deps
 echo "→ Generating Prisma client..."
 npx prisma generate
 
-echo "→ Running migrations..."
-npx prisma migrate deploy
+echo "→ Syncing database schema..."
+npx prisma db push --skip-generate
 
 echo "→ Building..."
 npm run build
