@@ -1,5 +1,5 @@
 import { getCategories } from "@/lib/queries/quiz";
-import SimulationCatalog from "@/pages/SimulationCatalog";
+import SimulationCatalog from "@/components/pages/SimulationCatalog";
 
 export const dynamic = "force-dynamic";
 

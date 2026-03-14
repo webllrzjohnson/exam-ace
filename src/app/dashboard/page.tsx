@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getUserProgress } from "@/lib/queries/quiz-attempt";
-import DashboardPage from "@/pages/DashboardPage";
+import DashboardPage from "@/components/pages/DashboardPage";
 
 export const metadata = {
   title: "Dashboard | Canadian Citizenship",

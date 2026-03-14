@@ -1,5 +1,5 @@
 import { getFlashcardSetsMeta } from "@/lib/queries/flashcard";
-import FlashcardsPage from "@/pages/FlashcardsPage";
+import FlashcardsPage from "@/components/pages/FlashcardsPage";
 
 export const metadata = {
   title: "Flashcards | Canadian Citizenship",

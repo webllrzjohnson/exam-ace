@@ -1,4 +1,4 @@
-import ReviewPage from "@/pages/ReviewPage";
+import ReviewPage from "@/components/pages/ReviewPage";
 
 export default async function QuizReviewRoute({ params }: { params: { id: string } }) {
   const { id } = params;

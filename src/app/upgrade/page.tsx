@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import UpgradePage from "@/pages/UpgradePage";
+import UpgradePage from "@/components/pages/UpgradePage";
 
 export const metadata = {
   title: "Upgrade to Premium | Canadian Citizenship",

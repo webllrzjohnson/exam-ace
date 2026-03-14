@@ -1,4 +1,4 @@
-import PricingPage from "@/pages/PricingPage";
+import PricingPage from "@/components/pages/PricingPage";
 
 export const metadata = {
   title: "Upgrade | Canadian Citizenship Test Prep",

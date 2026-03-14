@@ -1,4 +1,4 @@
-import QuizDetail from "@/pages/QuizDetail";
+import QuizDetail from "@/components/pages/QuizDetail";
 
 export default function QuizDetailPage({
   params,

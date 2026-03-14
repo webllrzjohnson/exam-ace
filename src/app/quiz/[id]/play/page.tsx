@@ -1,4 +1,4 @@
-import QuizPlayer from "@/pages/QuizPlayer";
+import QuizPlayer from "@/components/pages/QuizPlayer";
 
 export default function QuizPlayPage({
   params,

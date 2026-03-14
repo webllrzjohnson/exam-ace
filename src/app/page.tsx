@@ -1,4 +1,4 @@
-import HomePage from "@/pages/HomePage";
+import HomePage from "@/components/pages/HomePage";
 import { getCategories } from "@/lib/queries/quiz";
 
 export default async function Home() {

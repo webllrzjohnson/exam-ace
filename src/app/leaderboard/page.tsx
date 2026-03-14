@@ -1,5 +1,5 @@
 import { getLeaderboard } from "@/lib/queries/quiz-attempt";
-import LeaderboardPage from "@/pages/LeaderboardPage";
+import LeaderboardPage from "@/components/pages/LeaderboardPage";
 import { auth } from "@/lib/auth";
 import { canAccessFeature, getUserTier } from "@/lib/access-control";
 import { redirect } from "next/navigation";

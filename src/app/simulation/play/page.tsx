@@ -1,4 +1,4 @@
-import SimulationPlayer from "@/pages/SimulationPlayer";
+import SimulationPlayer from "@/components/pages/SimulationPlayer";
 import { auth } from "@/lib/auth";
 import { isPremium } from "@/lib/access-control";
 import { redirect } from "next/navigation";

@@ -1,4 +1,4 @@
-import QuizCatalog from "@/pages/QuizCatalog";
+import QuizCatalog from "@/components/pages/QuizCatalog";
 
 export const metadata = {
   title: "Quiz Catalog | Canadian Citizenship",
