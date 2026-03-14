@@ -11,6 +11,9 @@ import "@/index.css";
 export const metadata: Metadata = {
   title: "Canadian Citizenship Test Prep",
   description: "Practice for your Canadian citizenship test",
+  icons: {
+    icon: [{ url: "/icon?v=2", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({
