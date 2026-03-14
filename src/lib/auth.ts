@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { CredentialsSignin } from "next-auth";
 import { compare } from "bcryptjs";
 import { db } from "@/lib/db";
 
@@ -18,6 +19,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!user) return null;
         const valid = await compare(String(credentials.password), user.passwordHash);
         if (!valid) return null;
+        if (!user.emailVerified) {
+          throw new CredentialsSignin("Please verify your email before signing in.");
+        }
         return {
           id: user.id,
           email: user.email,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -18,6 +19,7 @@ import { register } from "./actions";
 import { RegisterSchema, type RegisterInput } from "./schema";
 
 export function RegisterForm() {
+  const [submitted, setSubmitted] = useState(false);
   const form = useForm<RegisterInput>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: { email: "", password: "", confirmPassword: "", name: "" },
@@ -36,12 +38,29 @@ export function RegisterForm() {
         form.setError("root", { message: result.error });
         return;
       }
+      setSubmitted(true);
     } catch (e) {
       if (e && typeof e === "object" && "digest" in e && e.digest === "NEXT_REDIRECT") {
         throw e;
       }
       form.setError("root", { message: "Something went wrong. Please try again." });
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-lg bg-muted px-4 py-3 text-sm text-muted-foreground">
+          Check your email to verify your account. Click the link we sent you, then sign in.
+        </div>
+        <Link
+          href="/login"
+          className="block text-center text-sm font-medium text-primary hover:underline"
+        >
+          Back to sign in
+        </Link>
+      </div>
+    );
   }
 
   return (

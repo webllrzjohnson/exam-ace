@@ -45,7 +45,7 @@ export function LoginForm() {
       redirect: false,
     });
     if (res?.error) {
-      setError("Invalid email or password.");
+      setError(res.error);
       return;
     }
     router.push(callbackUrl);
