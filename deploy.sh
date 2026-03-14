@@ -8,7 +8,7 @@ echo "→ Pulling latest code..."
 git pull origin main
 
 echo "→ Installing dependencies..."
-npm install
+npm install --legacy-peer-deps
 
 echo "→ Generating Prisma client..."
 npx prisma generate
