@@ -24,19 +24,48 @@ Create `.env` on the server:
 DATABASE_URL="postgresql://examlbl_user:YOUR_PASSWORD@localhost:5432/cad_exam"
 NEXTAUTH_URL="https://citizen.maplehub.cloud"
 NEXTAUTH_SECRET="generate-a-secure-32-char-string"
+AUTH_TRUST_HOST=true
 ADMIN_EMAIL="admin@example.com"
 ADMIN_PASSWORD="your-secure-admin-password"
+
+# Production URLs (required for email links)
+RESET_PASSWORD_URL="https://citizen.maplehub.cloud"
+APP_URL="https://citizen.maplehub.cloud"
+
+# Resend (for password reset & email verification)
+RESEND_API_KEY=re_xxxx
+RESEND_FROM_EMAIL="Exam Ace <noreply@citizen.maplehub.cloud>"
 ```
 
 ## 3. Deploy
 
+**First-time deploy** (after clone):
+
 ```bash
-git pull
+cd /var/www/examlbl
 npm install
 npx prisma generate
 npx prisma migrate deploy   # or: npx prisma db push
 npm run db:seed             # creates admin user + seed data
 npm run build
+```
+
+**Future updates** (after `git pull`):
+
+```bash
+cd /var/www/examlbl
+./deploy.sh
+```
+
+Or manually:
+
+```bash
+git pull origin main
+npm install
+npx prisma generate
+npx prisma migrate deploy
+npm run build
+pm2 restart examlbl
 ```
 
 ## 4. PM2
