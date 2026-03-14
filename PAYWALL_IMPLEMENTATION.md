@@ -220,38 +220,29 @@ Before deploying, verify:
 - [ ] "Upgrade" button appears for free users
 - [ ] Lock icons appear on restricted features
 
-## Next Steps: Payment Integration
+## Stripe Payment Integration (Implemented)
 
-When ready to add Stripe payments:
+Stripe checkout is wired up. To enable:
 
-1. **Install Stripe**:
-   ```bash
-   npm install stripe @stripe/stripe-js
-   ```
+1. **Create a Product in Stripe Dashboard**:
+   - Products → Add product → Recurring $9.99/month
+   - Copy the Price ID (e.g. `price_xxx`)
 
 2. **Environment Variables** (add to `.env`):
    ```
    STRIPE_SECRET_KEY=sk_test_...
    STRIPE_PUBLISHABLE_KEY=pk_test_...
    STRIPE_WEBHOOK_SECRET=whsec_...
-   STRIPE_PRICE_ID=price_...
+   STRIPE_PRICE_ID=price_xxx
    ```
 
-3. **Create Stripe Webhook** (`src/app/api/webhooks/stripe/route.ts`):
-   - Handle `checkout.session.completed`
-   - Handle `customer.subscription.updated`
-   - Handle `customer.subscription.deleted`
-   - Update user `subscriptionTier` and `subscriptionStatus`
+3. **Webhook** (`src/app/api/webhooks/stripe/route.ts`):
+   - Handles `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
+   - Updates user `subscriptionTier`, `subscriptionStatus`, `subscriptionId`, `subscriptionEndsAt`
 
-4. **Update Upgrade Page**:
-   - Replace "Coming Soon" button with Stripe checkout
-   - Use `@stripe/stripe-js` for client-side checkout
-   - Create checkout session via API route
+4. **Local testing**: Run `stripe listen --forward-to localhost:3000/api/webhooks/stripe` and use the printed webhook secret.
 
-5. **Add Subscription Management**:
-   - Create `/dashboard/subscription` page
-   - Show current plan, billing date, cancel option
-   - Use Stripe Customer Portal for management
+5. **Optional**: Add `/dashboard/subscription` for plan management via Stripe Customer Portal.
 
 ## Files Created
 

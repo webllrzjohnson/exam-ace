@@ -1,9 +1,35 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Check, Crown, Sparkles, Zap, Target, TrendingUp, Award, Clock } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Check, Crown, Sparkles, Zap, Target, TrendingUp, Award, Clock, Loader2 } from "lucide-react";
 
 export default function UpgradePage() {
+  const { data: session, status } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    if (status !== "authenticated") {
+      window.location.href = "/login?callbackUrl=/upgrade";
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+      });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error(data.error);
+        setIsLoading(false);
+      }
+    } catch {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-background">
       <div className="container py-16 max-w-6xl">
@@ -190,13 +216,23 @@ export default function UpgradePage() {
             </ul>
 
             <button
-              disabled
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              onClick={handleCheckout}
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
             >
-              Coming Soon
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Redirecting…
+                </>
+              ) : status === "authenticated" ? (
+                "Get Premium — $9.99/month"
+              ) : (
+                "Sign in to Upgrade"
+              )}
             </button>
             <p className="text-xs text-center text-muted-foreground mt-3">
-              Payment integration will be available soon
+              Secure payment via Stripe. Cancel anytime.
             </p>
           </div>
         </div>
