@@ -1,73 +1,243 @@
-# Welcome to your Lovable project
+# Canadian Citizenship Test Prep
 
-## Project info
+A full-stack web application for practicing the Canadian Citizenship Test, built with Next.js 14, TypeScript, and PostgreSQL.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Features
 
-## How can I edit this code?
+### Three-Tier Access System
 
-There are several ways of editing your application.
+- **Guest** (unauthenticated): Browse quizzes, limited access
+- **Free Registered**: Unlimited quizzes (10 questions max), dashboard, leaderboard
+- **Premium**: Full access to all features including flashcards, simulations, review mode, custom question counts (5-50)
 
-**Use Lovable**
+### Core Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Practice Quizzes**: Multiple categories covering Canadian history, government, geography, symbols, and rights
+- **Simulation Exams**: Timed practice tests mimicking the real citizenship exam
+- **Flashcards**: Study mode for memorizing key facts
+- **Review Mode**: Detailed explanations for each question
+- **Leaderboard**: Track progress and compete with other users
+- **Dashboard**: Personal stats and performance tracking
+- **Instant Feedback**: Real-time answer validation (premium)
 
-Changes made via Lovable will be committed automatically to this repo.
+## Tech Stack
 
-**Use your preferred IDE**
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS + Shadcn UI + Radix UI
+- **Database**: PostgreSQL via Prisma ORM
+- **Auth**: NextAuth.js v5 (Auth.js)
+- **Payments**: Stripe (subscriptions)
+- **Forms**: react-hook-form + Zod
+- **Deployment**: Hostinger VPS (Ubuntu), Nginx reverse proxy, PM2 process manager
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
 
-Follow these steps:
+- Node.js 16+ (use [nvm](https://github.com/nvm-sh/nvm))
+- PostgreSQL database
+- Stripe account (for payments)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Installation
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+# Clone the repository
+git clone https://github.com/webllrzjohnson/exam-ace.git
+cd exam-ace
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database URL, NextAuth secret, Stripe keys, etc.
+
+# Run database migrations
+npx prisma migrate dev
+
+# Seed the database
+npm run db:seed
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:3000`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Environment Variables
 
-**Use GitHub Codespaces**
+Required in `.env`:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/cad_exam"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-min-32-chars"
+AUTH_TRUST_HOST=true
 
-## What technologies are used for this project?
+# Stripe (for premium subscriptions)
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_ID=price_...
 
-This project is built with:
+# Email (optional, for password reset)
+RESEND_API_KEY=
+RESEND_FROM_EMAIL="App Name <noreply@yourdomain.com>"
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+See `.env.example` for all options.
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```
+├── prisma/
+│   ├── schema.prisma          # Database schema
+│   └── migrations/            # Database migrations
+├── src/
+│   ├── app/                   # Next.js App Router pages
+│   │   ├── (auth)/           # Auth pages (login, register, etc.)
+│   │   ├── (dashboard)/      # Protected routes
+│   │   ├── api/              # API route handlers
+│   │   └── upgrade/          # Upgrade/pricing pages
+│   ├── components/
+│   │   ├── ui/               # Shadcn UI primitives
+│   │   ├── paywall/          # Paywall components
+│   │   └── pages/            # Page-level components
+│   ├── lib/
+│   │   ├── db.ts             # Prisma client
+│   │   ├── auth.ts           # NextAuth config
+│   │   ├── stripe.ts         # Stripe client
+│   │   ├── access-control.ts # Tier-based access logic
+│   │   ├── actions/          # Server actions
+│   │   ├── queries/          # Database queries
+│   │   └── hooks/            # Custom React hooks
+│   └── types/                # TypeScript types
+├── scripts/                   # Utility scripts
+└── middleware.ts             # Edge route protection
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Database Schema
 
-Yes, you can!
+Key models:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **User**: Authentication, subscription tier, email verification
+- **Quiz**: Quiz metadata, categories, difficulty
+- **Question**: Quiz questions with multiple types (multiple choice, true/false, matching)
+- **QuizAttempt**: User quiz results and history
+- **DailyQuizLimit**: Daily attempt tracking (deprecated for free tier)
+- **Category**: Quiz categories (history, government, etc.)
+- **Fact**: Fun facts for learning
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Stripe Integration
+
+### Setup
+
+1. Create a product in Stripe Dashboard (Recurring, $9.99/month)
+2. Copy the Price ID and add to `.env` as `STRIPE_PRICE_ID`
+3. Add Stripe API keys to `.env`
+4. Configure webhook endpoint: `https://yourdomain.com/api/webhooks/stripe`
+5. Select events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
+6. Copy webhook signing secret to `.env` as `STRIPE_WEBHOOK_SECRET`
+
+### Local Testing
+
+```bash
+# Install Stripe CLI
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+
+# Use test card: 4242 4242 4242 4242
+```
+
+## Deployment
+
+### Hostinger VPS
+
+```bash
+# SSH into server
+ssh root@your-server-ip
+
+# Navigate to project
+cd /var/www/examlbl
+
+# Pull latest changes
+git pull
+
+# Install dependencies
+npm install
+
+# Run migrations
+npx prisma migrate deploy
+
+# Build
+npm run build
+
+# Restart with PM2
+pm2 restart all
+```
+
+### Nginx Configuration
+
+Reverse proxy on port 80/443 → Node.js on port 3000.
+
+## Scripts
+
+```bash
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run start            # Start production server
+npm run lint             # Run ESLint
+npm run db:generate      # Generate Prisma client
+npm run db:migrate       # Run migrations (dev)
+npm run db:seed          # Seed database
+npm run db:push          # Push schema changes (dev)
+```
+
+## Admin Access
+
+Admin users (`role === "admin"`) automatically get premium access. Set via database:
+
+```sql
+UPDATE "User" SET role = 'admin' WHERE email = 'admin@example.com';
+```
+
+## Testing
+
+Manual verification for email (dev/testing):
+
+```sql
+UPDATE "User" SET "emailVerified" = NOW() WHERE email = 'user@example.com';
+```
+
+Upgrade user to premium:
+
+```bash
+tsx scripts/upgrade-user.ts user@example.com
+```
+
+Downgrade user:
+
+```bash
+tsx scripts/downgrade-user.ts user@example.com
+```
+
+## Documentation
+
+- **[PAYWALL_IMPLEMENTATION.md](./PAYWALL_IMPLEMENTATION.md)**: Complete paywall documentation, access control, Stripe integration
+- **[.env.example](./.env.example)**: Environment variable reference
+
+## Contributing
+
+1. Create a feature branch
+2. Make changes
+3. Test locally
+4. Commit with clear messages
+5. Push and create a pull request
+
+## License
+
+Private project.
+
+## Support
+
+For issues or questions, contact the development team.
