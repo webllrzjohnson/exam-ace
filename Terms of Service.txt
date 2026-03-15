@@ -1,0 +1,57 @@
+## Terms of Service
+
+**Last updated:** March 2026
+
+By using this website and its services, you agree to the following terms.
+
+### Purpose of the Website
+
+This website provides **educational study tools and practice materials** to help users prepare for the Canadian citizenship exam.
+
+The content is intended as a **study aid only** and does not guarantee success on the official citizenship test.
+
+### Study Materials
+
+Some study questions and information are based on the official study guide:
+
+**Discover Canada: The Rights and Responsibilities of Citizenship**
+
+The practice questions provided on this website are designed to help users review and understand the material contained in the official guide.
+
+### Subscriptions and Payments
+
+Access to certain features may require a paid subscription.
+
+Payments are securely processed through **Stripe**. By purchasing a subscription, you agree to the payment terms displayed at checkout.
+
+Subscriptions may renew automatically unless canceled.
+
+### Refunds
+
+Because this service provides **immediate access to digital educational content**, refunds may not always be possible after access has been granted. However, reasonable requests may be reviewed on a case-by-case basis.
+
+### Website Availability
+
+While efforts are made to keep the website running smoothly, the service may occasionally experience downtime due to maintenance, updates, or technical issues.
+
+### Errors and Improvements
+
+This website is a personal project and may occasionally contain errors in questions, answers, or functionality. Users are encouraged to report any issues so they can be corrected.
+
+The website will continue to evolve and improve over time.
+
+### Acceptable Use
+
+Users agree not to:
+
+* Attempt to copy or redistribute website content for commercial purposes
+* Attempt to hack, disrupt, or interfere with the website
+* Use automated tools to scrape or extract large amounts of content
+
+### Changes to Terms
+
+These terms may be updated as the website grows. Continued use of the website indicates acceptance of any revised terms.
+
+### Contact
+
+For questions regarding these terms, please contact the website administrator through the website’s contact page.

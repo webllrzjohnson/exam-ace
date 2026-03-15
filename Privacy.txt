@@ -1,0 +1,52 @@
+## Privacy Policy
+
+**Last updated:** March 2026
+
+Thank you for using this website. Your privacy is important, and this page explains what information may be collected and how it is used.
+
+### Information We Collect
+
+When you use this website, we may collect limited information such as:
+
+* Email address (if you create an account)
+* Payment information processed securely by Stripe
+* Basic usage information such as pages visited or quiz progress
+* Technical information like browser type or device
+
+We **do not store credit card information** on this website. All payments are securely processed by Stripe.
+
+### How Your Information Is Used
+
+The information collected may be used to:
+
+* Provide access to study materials and practice tests
+* Manage subscriptions and payments
+* Improve the website and fix errors
+* Communicate important service updates
+
+Your information will **never be sold or rented to third parties**.
+
+### Cookies
+
+This website may use basic cookies to improve your experience, remember your login session, and help the site function properly.
+
+### Third-Party Services
+
+Some services used on this website may collect limited information in order to function properly. These may include:
+
+* Stripe for payment processing
+* Hosting providers used to operate the website infrastructure
+
+Each third-party service has its own privacy policies governing how they handle data.
+
+### Data Security
+
+Reasonable technical measures are used to protect your information. However, no internet service can guarantee absolute security.
+
+### Changes to This Policy
+
+This privacy policy may be updated occasionally as the website evolves. Continued use of the website indicates acceptance of any updates.
+
+### Contact
+
+If you have questions about this privacy policy, please contact the website administrator through the contact page.

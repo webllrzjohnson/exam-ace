@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslation } from "react-i18next";
 import { useSession } from "next-auth/react";
 import { ArrowRight, BookOpen, CheckCircle, Clock, Star, Users, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { getUserTier } from "@/lib/access-control";
+import { TestimonialsSection } from "@/components/home/TestimonialsSection";
+import { testimonials } from "@/data/testimonials";
 
 const stats = [
   { icon: BookOpen, value: "500+", label: "Practice Questions" },
-  { icon: Users, value: "12,000+", label: "Students Passed" },
+  { icon: Users, value: "734+", label: "Successful Subscribers" },
   { icon: CheckCircle, value: "95%", label: "Pass Rate" },
   { icon: Star, value: "4.9/5", label: "User Rating" },
 ];
@@ -17,7 +18,6 @@ const stats = [
 type Category = { id: string; name: string; icon: string; description: string; quizCount: number; color: string };
 
 export default function HomePage({ categories = [] }: { categories?: Category[] }) {
-  const { t } = useTranslation();
   const { data: session } = useSession();
   const tier = getUserTier(session);
   const showComparePlans = tier !== "premium";
@@ -114,6 +114,8 @@ export default function HomePage({ categories = [] }: { categories?: Category[] 
         </div>
       </section>
 
+      <TestimonialsSection reviews={testimonials} />
+
       <section className="container pb-20">
         <div className="gradient-hero rounded-2xl p-10 md:p-14 text-center text-primary-foreground">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4 text-gradient">Ready to Become a Canadian Citizen?</h2>
@@ -132,7 +134,7 @@ export default function HomePage({ categories = [] }: { categories?: Category[] 
                 className="inline-flex items-center gap-2 border-2 border-primary-foreground/50 text-primary-foreground px-8 py-3.5 rounded-lg font-bold text-base hover:bg-primary-foreground/10 transition-colors"
               >
                 <Crown className="w-5 h-5" />
-                {t("home.upgrade")}
+                Upgrade
               </Link>
             )}
           </div>

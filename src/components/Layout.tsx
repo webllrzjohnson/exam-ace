@@ -363,8 +363,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-border bg-card py-8">
-        <div className="container flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 text-sm text-muted-foreground">
-          <p>© 2026 Canadian Citizenship Test Prep. Practice smarter, pass with confidence. 🍁</p>
+        <div className="container flex flex-col gap-6">
+          <div className="flex flex-wrap items-center justify-center sm:justify-between gap-4 text-sm text-muted-foreground">
+            <p>© 2026 Canadian Citizenship Test Prep. Practice smarter, pass with confidence. 🍁</p>
+            <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
+              <Link href="/about" className="hover:text-foreground transition-colors">
+                About
+              </Link>
+              <Link href="/contact" className="hover:text-foreground transition-colors">
+                Contact
+              </Link>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">
+                Privacy
+              </Link>
+              <Link href="/terms" className="hover:text-foreground transition-colors">
+                Terms
+              </Link>
+            </nav>
+          </div>
         </div>
       </footer>
       <AccessibilityWidget />

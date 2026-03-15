@@ -1,0 +1,48 @@
+## About This Project
+
+Hi, and welcome.
+
+This website started as a small personal project — something I built simply because I enjoy creating useful tools on the internet.
+
+I used to work as a **full-stack developer**, but like many people, my career path changed during the global disruption caused by the COVID-19 pandemic. Since then, I’ve moved into a different field, but I still enjoy building websites and experimenting with ideas in my spare time. This citizenship test reviewer is one of those projects.
+
+### Why is it only CAD $9.99?
+
+The short answer is: this project is more of a **hobby than a business**.
+
+The small fee helps cover the basic costs of keeping the site running, such as:
+
+* VPS server hosting
+* Domain name and infrastructure
+* Ongoing maintenance and updates
+
+Anything left over mostly goes toward something a little more personal — **food and veterinary care for my four cats** who keep me company while I work on this project.
+
+My goal was to make a study tool that is **simple, affordable, and accessible**, especially for people who may not want to spend a lot of money preparing for the citizenship exam.
+
+### About the Questions
+
+The questions used in this reviewer are based on material from the official Canadian citizenship study guide, **Discover Canada: The Rights and Responsibilities of Citizenship**.
+
+These are the same materials I used when I studied for my own citizenship exam. While the questions here are adapted into practice formats like quizzes and flashcards, the goal is to help you become familiar with the knowledge covered in the official guide.
+
+### Work in Progress
+
+Because this is a small independent project, the site is **still evolving**.
+
+I’ve done my best to debug the code and review the questions carefully, but there may still be occasional errors or things that could be improved. If you ever notice something that doesn’t look right, please feel free to let me know. Your feedback helps make the tool better for everyone.
+
+Over time I plan to continue improving the site and adding features such as:
+
+* more practice questions
+* improved flashcards
+* better progress tracking
+* additional study tools
+
+### A Small Note of Encouragement
+
+Preparing for the citizenship exam is more than just passing a test. It represents a meaningful step toward becoming part of a new community and shaping the future for yourself and your family.
+
+Thank you very much for supporting this small project. And most importantly:
+
+**Congratulations on making one of the best investments you can make — preparing for your Canadian citizenship.**
