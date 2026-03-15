@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { seedTestimonials } from "../src/data/testimonials-seed";
 
 const db = new PrismaClient();
 
@@ -7,9 +8,9 @@ async function main() {
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
   const adminEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
 
-  const existingAdmin = await db.user.findUnique({ where: { email: adminEmail } });
-  if (!existingAdmin) {
-    await db.user.create({
+  let adminUser = await db.user.findUnique({ where: { email: adminEmail } });
+  if (!adminUser) {
+    adminUser = await db.user.create({
       data: {
         email: adminEmail,
         passwordHash: await hash(adminPassword, 12),
@@ -365,6 +366,24 @@ async function main() {
       topics: ["Canadian History", "Culture and Society", "Economy and Industry", "Geography and Regions", "Government and Democracy", "Rights and Responsibilities", "Symbols and Anthems"],
     },
   });
+
+  const approvedCount = await db.review.count({ where: { status: "approved" } });
+  if (approvedCount === 0 && adminUser) {
+    for (const t of seedTestimonials) {
+      await db.review.create({
+        data: {
+          userId: adminUser.id,
+          name: t.name,
+          province: t.province,
+          rating: t.rating,
+          text: t.text,
+          status: "approved",
+          avatarUrl: null,
+        },
+      });
+    }
+    console.log(`Seeded ${seedTestimonials.length} testimonials`);
+  }
 
   console.log("Seed completed.");
 }

@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/carousel";
 import { StarRating } from "@/components/ui/star-rating";
 
-import type { Review } from "@/types";
+type ReviewForDisplay = {
+  id: string;
+  name: string;
+  province: string;
+  rating: number;
+  text: string;
+  avatarUrl: string | null;
+};
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -23,7 +30,7 @@ function getInitials(name: string): string {
 }
 
 type TestimonialsSectionProps = {
-  reviews: Review[];
+  reviews: ReviewForDisplay[];
 };
 
 export function TestimonialsSection({ reviews }: TestimonialsSectionProps): React.ReactElement {
@@ -34,6 +41,19 @@ export function TestimonialsSection({ reviews }: TestimonialsSectionProps): Reac
     const interval = setInterval(() => api.scrollNext(), 5000);
     return () => clearInterval(interval);
   }, [api]);
+
+  if (reviews.length === 0) {
+    return (
+      <section className="container py-16">
+        <div className="text-center">
+          <h2 className="font-display text-3xl font-bold text-foreground mb-3">Thank you for the kind words</h2>
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            Join hundreds who passed the Canadian citizenship test. Be the first to share your experience!
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="container py-16">

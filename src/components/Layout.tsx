@@ -144,6 +144,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 Dashboard
               </Link>
             )}
+            {canAccessDashboard && (
+              <Link
+                href="/dashboard/profile"
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted/80 ${
+                  pathname === "/dashboard/profile" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                Profile
+              </Link>
+            )}
             {session?.user?.role === "admin" && (
               <Link
                 href="/admin"
@@ -308,6 +318,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   >
                     <User className="w-4 h-4" />
                     Dashboard
+                  </Link>
+                )}
+                {canAccessDashboard && (
+                  <Link
+                    href="/dashboard/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      pathname === "/dashboard/profile" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Profile
                   </Link>
                 )}
                 {session?.user?.role === "admin" && (

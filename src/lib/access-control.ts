@@ -5,6 +5,7 @@ export type UserTier = "guest" | "free" | "premium";
 export const TIER_LIMITS = {
   guest: {
     canTakeQuizzes: true,
+    canSubmitTestimonial: false,
     canSeeResults: true,
     canAccessDashboard: false,
     canAccessFlashcards: false,
@@ -18,6 +19,7 @@ export const TIER_LIMITS = {
   },
   free: {
     canTakeQuizzes: true,
+    canSubmitTestimonial: false,
     canSeeResults: true,
     canAccessDashboard: true,
     canAccessFlashcards: false,
@@ -39,6 +41,7 @@ export const TIER_LIMITS = {
     canAccessReview: true,
     canSeeFeedback: true,
     canAppearInLeaderboard: true,
+    canSubmitTestimonial: true,
     maxQuestionsPerQuiz: null,
     dailyQuizLimit: null,
   },

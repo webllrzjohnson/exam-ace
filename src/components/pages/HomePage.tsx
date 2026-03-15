@@ -6,7 +6,6 @@ import { ArrowRight, BookOpen, CheckCircle, Clock, Star, Users, Crown } from "lu
 import { motion } from "framer-motion";
 import { getUserTier } from "@/lib/access-control";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
-import { testimonials } from "@/data/testimonials";
 
 const stats = [
   { icon: BookOpen, value: "500+", label: "Practice Questions" },
@@ -17,7 +16,17 @@ const stats = [
 
 type Category = { id: string; name: string; icon: string; description: string; quizCount: number; color: string };
 
-export default function HomePage({ categories = [] }: { categories?: Category[] }) {
+type ReviewForDisplay = {
+  id: string;
+  name: string;
+  province: string;
+  rating: number;
+  text: string;
+  avatarUrl: string | null;
+  createdAt: Date;
+};
+
+export default function HomePage({ categories = [], reviews = [] }: { categories?: Category[]; reviews?: ReviewForDisplay[] }) {
   const { data: session } = useSession();
   const tier = getUserTier(session);
   const showComparePlans = tier !== "premium";
@@ -114,7 +123,7 @@ export default function HomePage({ categories = [] }: { categories?: Category[] 
         </div>
       </section>
 
-      <TestimonialsSection reviews={testimonials} />
+      <TestimonialsSection reviews={reviews} />
 
       <section className="container pb-20">
         <div className="gradient-hero rounded-2xl p-10 md:p-14 text-center text-primary-foreground">
